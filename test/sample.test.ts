@@ -2,7 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import { Template, Match } from 'aws-cdk-lib/assertions';
 import * as Sample from '../lib/sample-stack';
 
-test('SQS Queue and SNS Topic Created', () => {
+test('SQS Queue and Lambda created', () => {
   const app = new cdk.App();
   // WHEN
   const stack = new Sample.SampleStack(app, 'MyTestStack');
@@ -13,5 +13,5 @@ test('SQS Queue and SNS Topic Created', () => {
   template.hasResourceProperties('AWS::SQS::Queue', {
     VisibilityTimeout: 300
   });
-  template.resourceCountIs('AWS::SNS::Topic', 1);
+  template.resourceCountIs('AWS::Lambda::Function', 1);
 });

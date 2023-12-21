@@ -1,0 +1,29 @@
+stages:
+  # - lint
+  - test
+  - deploy
+
+# ... other jobs like build, lint, and test ...
+
+run_unit_tests:
+  stage: test
+  image: node:latest
+  before_script:
+    - npm install -g aws-cdk
+    - npm install
+  script:
+    - npm test
+  only:
+    - master
+
+deploy:
+  stage: deploy
+  image: node:latest
+  before_script:
+    - npm install -g aws-cdk
+    - npm install
+  script:
+    - cdk diff
+    - cdk deploy --require-approval never
+  only:
+    - master

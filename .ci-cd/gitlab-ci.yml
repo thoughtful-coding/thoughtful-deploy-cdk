@@ -13,10 +13,7 @@ sast:
 
 run_unit_tests:
   stage: test
-  image: node:latest
-  before_script:
-    - npm install -g aws-cdk
-    - npm install
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   script:
     - npm test
   only:
@@ -24,10 +21,7 @@ run_unit_tests:
 
 deploy:
   stage: deploy
-  image: node:latest
-  before_script:
-    - npm install -g aws-cdk
-    - npm install
+  image: registry.gitlab.com/gitlab-org/cloud-deploy/aws-base:latest
   script:
     - cdk diff
     - cdk deploy --require-approval never

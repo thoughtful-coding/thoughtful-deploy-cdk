@@ -1,9 +1,15 @@
+include:
+- template: Security/SAST.gitlab-ci.yml
+
 stages:
   # - lint
   - test
   - deploy
 
 # ... other jobs like build, lint, and test ...
+
+sast:
+  stage: test
 
 run_unit_tests:
   stage: test

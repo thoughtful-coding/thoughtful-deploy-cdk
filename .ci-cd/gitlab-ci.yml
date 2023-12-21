@@ -17,7 +17,7 @@ run_unit_tests:
   script:
     - npm test
   only:
-    - master
+    - main
 
 deploy:
   stage: deploy
@@ -26,4 +26,4 @@ deploy:
     - cdk diff
     - cdk deploy --require-approval never
   only:
-    - master
+    - main

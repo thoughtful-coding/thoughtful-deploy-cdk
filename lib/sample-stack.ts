@@ -9,7 +9,7 @@ import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 
 const PYTHON_CODE = `
 def simple_handler(event, context) -> None:
-    print("Hello!")
+    print("Hello there dude!")
     print(event)
     print(context)
 `

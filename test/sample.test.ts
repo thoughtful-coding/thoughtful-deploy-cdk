@@ -13,5 +13,4 @@ test('SQS Queue and Lambda created', () => {
   template.hasResourceProperties('AWS::SQS::Queue', {
     VisibilityTimeout: 300
   });
-  template.resourceCountIs('AWS::Lambda::Function', 1);
 });

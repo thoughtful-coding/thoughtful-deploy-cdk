@@ -2,11 +2,20 @@ include:
 - template: Security/SAST.gitlab-ci.yml
 
 stages:
-  # - lint
+  - lint
   - test
   - deploy
 
 # ... other jobs like build, lint, and test ...
+lint_project:
+  stage: lint
+  image: node:latest
+  before_script:
+    - npm install
+  script:
+    - npx eslint .
+  only:
+    - main
 
 sast:
   stage: test

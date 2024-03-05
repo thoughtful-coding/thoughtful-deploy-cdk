@@ -12,7 +12,7 @@ lint_project:
   image: node:latest
   before_script:
     - npm install
-    - npm init @eslint/config
+    - npm install --save-dev eslint typescript typescript-eslint
   script:
     - npx eslint .
   only:

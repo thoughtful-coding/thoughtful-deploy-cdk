@@ -11,8 +11,8 @@ lint_project:
   stage: lint
   image: node:latest
   before_script:
-    - npm init @eslint/config
     - npm install
+    - npm init @eslint/config
   script:
     - npx eslint .
   only:

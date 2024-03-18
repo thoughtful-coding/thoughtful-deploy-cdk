@@ -14,23 +14,12 @@ import { Repository } from 'aws-cdk-lib/aws-ecr';
 import { EcrImage } from 'aws-cdk-lib/aws-ecs';
 
 
-const PYTHON_CODE = `
-import os
-
-
-def simple_handler(event, context) -> None:
-    print("Hello there dude!")
-    print(event)
-    print(context)
-    print("Will output to bucket", os.environ["OUTPUT_BUCKET_NAME"])
-`
-
 
 export class SampleStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
   
-    // The code that defines your stack goes here
+    // Create input/output buckets
     const inputBucket = new s3.Bucket(
       this,
       'uclsinputbucket-1234',
@@ -38,66 +27,40 @@ export class SampleStack extends Stack {
         removalPolicy: RemovalPolicy.RETAIN
         
       }
-    )
+    );
     const outputBucket = new s3.Bucket(
       this,
       'uclsoutputbucket-1234',
       {
         removalPolicy: RemovalPolicy.RETAIN
       }
-    )
-    const dockerrepository = ecr.Repository.fromRepositoryName(this, 'randomrepository','danieluclsdockerrepository')
-    // example resource
-    const queue = new sqs.Queue(
-      this,
-      'SampleQueue',
-      {
-        visibilityTimeout: Duration.seconds(300),
-
-      },
     );
-    
+
+    // Create lambda using ECR repo
+    const dockerRepository = ecr.Repository.fromRepositoryName(
+      this,
+      'randomrepository',
+      'danieluclsdockerrepository',
+    );
     const samples3lambda = new lambda.DockerImageFunction(
       this,
       "FileTriggerTest",
       {
         code: lambda.DockerImageCode.fromEcr
-        (dockerrepository, {tag:"latest"}),
+        (dockerRepository, {tag:"latest"}),
         environment: {
           OUTPUT_BUCKET_NAME: outputBucket.bucketName,
         },
       }
     );
-    `new lambda.Function(
-      this,
-      "S3Lambda",
-      {
-        runtime: lambda.Runtime.PYTHON_3_11,
-        memorySize: 1024,
-        timeout: Duration.minutes(1),
-        handler: 'index.simple_handler',  // Note: inline code saved to file
-        code: lambda.Code.fromInline(PYTHON_CODE),
-        environment: {
-          OUTPUT_BUCKET_NAME: outputBucket.bucketName,
-        }
-      },
-    );
-    `
-    
-    
-    
-    
-    
-    
 
-    
+
     inputBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED_PUT,
       new s3Notifications.LambdaDestination(samples3lambda),
     )
     
     // Permissions
-    queue.grantConsumeMessages(samples3lambda);
     samples3lambda.addToRolePolicy(new iam.PolicyStatement({
       actions: ['s3:GetObject', 's3:PutObject'],
       resources: [`${inputBucket.bucketArn}/*`,`${outputBucket.bucketArn}/*`],
@@ -106,7 +69,7 @@ export class SampleStack extends Stack {
       actions: ['ecr:GetDownloadUrlForLayer',
       'ecr:BatchGetImage',
       'ecr:BatchCheckLayerAvailability'],
-      resources: [dockerrepository.repositoryArn],
+      resources: [dockerRepository.repositoryArn],
     }));
     samples3lambda.addToRolePolicy(new iam.PolicyStatement({
       actions: ['ecr:GetAuthorizationToken'],
@@ -114,7 +77,5 @@ export class SampleStack extends Stack {
     }));
     inputBucket.grantRead(samples3lambda);
     outputBucket.grantWrite(samples3lambda);
-
-    samples3lambda.addEventSource(new SqsEventSource(queue));
   }
 }

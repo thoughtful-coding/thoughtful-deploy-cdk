@@ -50,7 +50,7 @@ export class SampleStack extends Stack {
         environment: {
           OUTPUT_BUCKET_NAME: outputBucket.bucketName,
         },
-        timeout: Duration.seconds(30),
+        timeout: Duration.seconds(40),
       }
     );
 

@@ -46,12 +46,11 @@ export class SampleStack extends Stack {
       this,
       "FileTriggerTest",
       {
-        code: lambda.DockerImageCode.fromEcr
-        (dockerRepository, {tag:"latest"}),
+        code: lambda.DockerImageCode.fromEcr(dockerRepository, {tag: "latest"}),
         environment: {
           OUTPUT_BUCKET_NAME: outputBucket.bucketName,
         },
-        timeout: Duration.minutes(1),
+        timeout: Duration.seconds(30),
       }
     );
 

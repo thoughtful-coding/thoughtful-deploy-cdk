@@ -7,6 +7,7 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as s3Notifications from 'aws-cdk-lib/aws-s3-notifications';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
 import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
 import { S3 } from 'aws-cdk-lib/aws-ses-actions';
@@ -35,8 +36,14 @@ export class SampleStack extends Stack {
         removalPolicy: RemovalPolicy.RETAIN
       }
     );
-
+    
     // Create lambda using ECR repo
+    const dataTable = new dynamodb.Table(this, 'MyTable', {
+      partitionKey: { name: 'file_type', type: dynamodb.AttributeType.STRING },
+      tableName: 'fileformatcountertable',
+      removalPolicy: RemovalPolicy.RETAIN, 
+    }); 
+
     const dockerRepository = ecr.Repository.fromRepositoryName(
       this,
       'randomrepository',
@@ -49,12 +56,12 @@ export class SampleStack extends Stack {
         code: lambda.DockerImageCode.fromEcr(dockerRepository, {tag: "latest"}),
         environment: {
           OUTPUT_BUCKET_NAME: outputBucket.bucketName,
+          FILE_TYPE_COUNTER_TABLE_NAME: dataTable.tableName,
         },
         timeout: Duration.seconds(40),
       }
     );
-
-
+    
     inputBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED_PUT,
       new s3Notifications.LambdaDestination(samples3lambda),
@@ -77,5 +84,6 @@ export class SampleStack extends Stack {
     }));
     inputBucket.grantRead(samples3lambda);
     outputBucket.grantWrite(samples3lambda);
+    dataTable.grantFullAccess(samples3lambda)
   }
 }

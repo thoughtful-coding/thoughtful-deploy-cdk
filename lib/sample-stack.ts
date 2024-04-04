@@ -62,7 +62,7 @@ export class SampleStack extends Stack {
 
     const apigLambda = new lambda.DockerImageFunction(
       this,
-      "FileTriggerTest",
+      "APIGPostLambda",
       {
         code: lambda.DockerImageCode.fromEcr(dockerRepository, {tag: "latest", cmd: ["aws_src_sample.lambdas.apig_post_lambda.api_post_lambda_handler"]}),
 

@@ -50,7 +50,7 @@ export class SampleStack extends Stack {
       this,
       "FileTriggerTest",
       {
-        code: lambda.DockerImageCode.fromEcr(dockerRepository, {tag: "latest", cmd: "aws_src_sample.lambdas.s3_put_lambda.s3_put_lambda_handler"}),
+        code: lambda.DockerImageCode.fromEcr(dockerRepository, {tag: "latest", cmd: ["aws_src_sample.lambdas.s3_put_lambda.s3_put_lambda_handler"]}),
         environment: {
           OUTPUT_BUCKET_NAME: outputBucket.bucketName,
           FILE_TYPE_COUNTER_TABLE_NAME: dataTable.tableName,
@@ -64,7 +64,7 @@ export class SampleStack extends Stack {
       this,
       "FileTriggerTest",
       {
-        code: lambda.DockerImageCode.fromEcr(dockerRepository, {tag: "latest", cmd: "aws_src_sample.lambdas.apig_post_lambda.api_post_lambda_handler"}),
+        code: lambda.DockerImageCode.fromEcr(dockerRepository, {tag: "latest", cmd: ["aws_src_sample.lambdas.apig_post_lambda.api_post_lambda_handler"]}),
 
         environment: {
           OUTPUT_BUCKET_NAME: outputBucket.bucketName,

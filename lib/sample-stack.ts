@@ -65,7 +65,6 @@ export class SampleStack extends Stack {
       "APIGPostLambda",
       {
         code: lambda.DockerImageCode.fromEcr(dockerRepository, {tag: "latest", cmd: ["aws_src_sample.lambdas.apig_post_lambda.api_post_lambda_handler"]}),
-
         environment: {
           OUTPUT_BUCKET_NAME: outputBucket.bucketName,
           FILE_TYPE_COUNTER_TABLE_NAME: dataTable.tableName,
@@ -77,7 +76,14 @@ export class SampleStack extends Stack {
     
     const filegetapi = new HttpApi(this, 'MyApi', {
       apiName: 'MyService',
+      corsPreflight: {
+        allowOrigins: ['https://holycrap872.github.io'],
+        allowMethods: [apigatewayv2.CorsHttpMethod.GET, apigatewayv2.CorsHttpMethod.POST, apigatewayv2.CorsHttpMethod.OPTIONS],
+        allowHeaders: ['Content-Type'],
+        maxAge: Duration.days(10),
+      },
     }); 
+
     const lambdaintegration = new HttpLambdaIntegration('lambdaintegration',
     apigLambda,
   );

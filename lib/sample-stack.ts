@@ -74,10 +74,9 @@ export class SampleStack extends Stack {
       runtime: lambda.Runtime.PYTHON_3_11,
       handler: 'index.lambda_handler',
       code: lambda.Code.fromInline(`
-    import json
-    import base64
-
-    def lambda_handler(event, context):
+import json
+import base64
+def lambda_handler(event, context):
     try:
         if 'isBase64Encoded' in event and event['isBase64Encoded']:
             file_content = base64.b64decode(event['body'])

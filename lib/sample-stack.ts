@@ -1,7 +1,4 @@
-import { Duration, RemovalPolicy, Stack, StackProps, aws_s3_notifications } from 'aws-cdk-lib';
-import * as sns from 'aws-cdk-lib/aws-sns';
-import * as subs from 'aws-cdk-lib/aws-sns-subscriptions';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { Duration, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -10,13 +7,7 @@ import * as s3Notifications from 'aws-cdk-lib/aws-s3-notifications';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
 import { Construct } from 'constructs';
-import { SqsEventSource } from 'aws-cdk-lib/aws-lambda-event-sources';
-import { S3 } from 'aws-cdk-lib/aws-ses-actions';
-import { Repository } from 'aws-cdk-lib/aws-ecr';
-import { EcrImage } from 'aws-cdk-lib/aws-ecs';
-import { HttpApi, HttpIntegrationSubtype } from 'aws-cdk-lib/aws-apigatewayv2';
-import { LambdaIntegration } from 'aws-cdk-lib/aws-apigateway';
-import { HttpLambdaResponseType } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
+import { HttpApi } from 'aws-cdk-lib/aws-apigatewayv2';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 
 
@@ -59,50 +50,42 @@ export class SampleStack extends Stack {
       this,
       "FileTriggerTest",
       {
-        code: lambda.DockerImageCode.fromEcr(dockerRepository, {tag: "latest"}),
+        code: lambda.DockerImageCode.fromEcr(dockerRepository, {tag: "latest", cmd: ["aws_src_sample.lambdas.s3_put_lambda.s3_put_lambda_handler"]}),
         environment: {
           OUTPUT_BUCKET_NAME: outputBucket.bucketName,
           FILE_TYPE_COUNTER_TABLE_NAME: dataTable.tableName,
+          REGION: "us-east-2",
+        },
+        timeout: Duration.seconds(40),
+      }
+    );
+
+    const apigLambda = new lambda.DockerImageFunction(
+      this,
+      "APIGPostLambda",
+      {
+        code: lambda.DockerImageCode.fromEcr(dockerRepository, {tag: "latest", cmd: ["aws_src_sample.lambdas.apig_post_lambda.api_post_lambda_handler"]}),
+        environment: {
+          OUTPUT_BUCKET_NAME: outputBucket.bucketName,
+          FILE_TYPE_COUNTER_TABLE_NAME: dataTable.tableName,
+          REGION: "us-east-2",
         },
         timeout: Duration.seconds(40),
       }
     );
     
-    //apig
-``
-    const lambda_function = new lambda.Function(this, 'InlineLambdaFunction', {
-      runtime: lambda.Runtime.PYTHON_3_11,
-      handler: 'index.lambda_handler',
-      code: lambda.Code.fromInline(`
-import json
-import base64
-def lambda_handler(event, context):
-    try:
-        if 'isBase64Encoded' in event and event['isBase64Encoded']:
-            file_content = base64.b64decode(event['body'])
-        else:
-            file_content = event['body'].encode('utf-8')
-        
-        print("Received file content:", file_content)
-
-        return {
-            'statusCode': 200,
-            'body': json.dumps('File processed successfully.')
-        }
-    except Exception as e:
-        print(f"Error processing file: {str(e)}")
-        return {
-            'statusCode': 500,
-            'body': json.dumps('Failed to process the file.')
-        }
-      `),
-    });
-
     const filegetapi = new HttpApi(this, 'MyApi', {
       apiName: 'MyService',
+      corsPreflight: {
+        allowOrigins: ['https://holycrap872.github.io'],
+        allowMethods: [apigatewayv2.CorsHttpMethod.GET, apigatewayv2.CorsHttpMethod.POST, apigatewayv2.CorsHttpMethod.OPTIONS],
+        allowHeaders: ['Content-Type'],
+        maxAge: Duration.days(10),
+      },
     }); 
+
     const lambdaintegration = new HttpLambdaIntegration('lambdaintegration',
-     lambda_function,
+    apigLambda,
   );
 
     filegetapi.addRoutes({
@@ -118,24 +101,27 @@ def lambda_handler(event, context):
     )
     
     // Permissions
-    samples3lambda.addToRolePolicy(new iam.PolicyStatement({
-      actions: ['s3:GetObject', 's3:PutObject'],
-      resources: [`${inputBucket.bucketArn}/*`,`${outputBucket.bucketArn}/*`],
-    }));
-    samples3lambda.addToRolePolicy(new iam.PolicyStatement({
-      actions: ['ecr:GetDownloadUrlForLayer',
-      'ecr:BatchGetImage',
-      'ecr:BatchCheckLayerAvailability'],
-      resources: [dockerRepository.repositoryArn],
-    }));
-    samples3lambda.addToRolePolicy(new iam.PolicyStatement({
-      actions: ['ecr:GetAuthorizationToken'],
-      resources: ['*'],
-    }));
+    const lambdas = [samples3lambda, apigLambda];
+    for (const lambda of lambdas) {
+      lambda.addToRolePolicy(new iam.PolicyStatement({
+        actions: ['s3:GetObject', 's3:PutObject'],
+        resources: [`${inputBucket.bucketArn}/*`,`${outputBucket.bucketArn}/*`],
+      }));
+      lambda.addToRolePolicy(new iam.PolicyStatement({
+        actions: ['ecr:GetDownloadUrlForLayer',
+        'ecr:BatchGetImage',
+        'ecr:BatchCheckLayerAvailability'],
+        resources: [dockerRepository.repositoryArn],
+      }));
+      lambda.addToRolePolicy(new iam.PolicyStatement({
+        actions: ['ecr:GetAuthorizationToken'],
+        resources: ['*'],
+      }));
+
+      outputBucket.grantWrite(lambda);
+      dataTable.grantFullAccess(lambda);
+    }
     
     inputBucket.grantRead(samples3lambda);
-    outputBucket.grantWrite(samples3lambda);
-    dataTable.grantFullAccess(samples3lambda);
-
   }
 }

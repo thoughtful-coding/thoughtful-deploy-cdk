@@ -40,7 +40,7 @@ export class SampleStack extends Stack {
       removalPolicy: RemovalPolicy.RETAIN, 
     }); 
     
-    const pongScoreTable = new dynamodb.Table(this, 'MyTable', {
+    const pongScoreTable = new dynamodb.Table(this, 'MyTable2', {
       partitionKey: { name: 'user', type: dynamodb.AttributeType.STRING },
       tableName: 'scoretable',
       removalPolicy: RemovalPolicy.RETAIN, 

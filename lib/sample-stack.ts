@@ -40,7 +40,11 @@ export class SampleStack extends Stack {
       removalPolicy: RemovalPolicy.RETAIN, 
     }); 
     
-
+    const pongScoreTable = new dynamodb.Table(this, 'MyTable', {
+      partitionKey: { name: 'user', type: dynamodb.AttributeType.STRING },
+      tableName: 'scoretable',
+      removalPolicy: RemovalPolicy.RETAIN, 
+    }); 
     const dockerRepository = ecr.Repository.fromRepositoryName(
       this,
       'randomrepository',
@@ -73,6 +77,19 @@ export class SampleStack extends Stack {
         timeout: Duration.seconds(40),
       }
     );
+    const pongscoreLambda = new lambda.DockerImageFunction(
+      this,
+      "pongscorelambda",
+      {
+        code: lambda.DockerImageCode.fromEcr(dockerRepository, {tag: "latest", cmd: ["aws_src_sample.lambdas.pong_score_lambda.pong_score_lambda_handler"]}),//change this
+        environment: {
+          OUTPUT_BUCKET_NAME: outputBucket.bucketName,
+          //FILE_TYPE_COUNTER_TABLE_NAME: dataTable.tableName, no
+          REGION: "us-east-2",
+        },
+        timeout: Duration.seconds(40),
+      }
+    );
     
     const filegetapi = new HttpApi(this, 'MyApi', {
       apiName: 'MyService',
@@ -84,14 +101,23 @@ export class SampleStack extends Stack {
       },
     }); 
 
-    const lambdaintegration = new HttpLambdaIntegration('lambdaintegration',
+    const lambdaintegrationpostcsv = new HttpLambdaIntegration('lambdaintegration',
+    apigLambda,
+  );
+    const lambdaintegrationpostpong = new HttpLambdaIntegration('lambdaintegration',
     apigLambda,
   );
 
     filegetapi.addRoutes({
       path: '/csv', // Specify the path for the route
       methods: [apigatewayv2.HttpMethod.POST], // Specify the HTTP methods for the route
-      integration: lambdaintegration,
+      integration: lambdaintegrationpostcsv,
+    });
+
+    filegetapi.addRoutes({
+      path: '/pongscore', // Specify the path for the route
+      methods: [apigatewayv2.HttpMethod.POST], // Specify the HTTP methods for the route
+      integration: lambdaintegrationpostpong,
     });
     
     

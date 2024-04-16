@@ -86,6 +86,7 @@ export class SampleStack extends Stack {
           OUTPUT_BUCKET_NAME: outputBucket.bucketName,
           //FILE_TYPE_COUNTER_TABLE_NAME: dataTable.tableName, no
           REGION: "us-east-2",
+          PONG_SCORE_TABLE_NAME: pongScoreTable.tableName,
         },
         timeout: Duration.seconds(40),
       }
@@ -105,7 +106,7 @@ export class SampleStack extends Stack {
     apigLambda,
   );
     const lambdaintegrationpostpong = new HttpLambdaIntegration('lambdaintegration',
-    apigLambda,
+    pongscoreLambda,
   );
 
     filegetapi.addRoutes({

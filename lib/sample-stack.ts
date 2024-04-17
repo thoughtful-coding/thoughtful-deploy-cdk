@@ -77,7 +77,7 @@ export class SampleStack extends Stack {
         timeout: Duration.seconds(40),
       }
     );
-    const pongscoreLambda = new lambda.DockerImageFunction(
+    const pongscoregetLambda = new lambda.DockerImageFunction(
       this,
       "pongscorelambda",
       {
@@ -105,8 +105,8 @@ export class SampleStack extends Stack {
     const lambdaintegrationpostcsv = new HttpLambdaIntegration('lambdaintegration',
     apigLambda,
   );
-    const lambdaintegrationpostpong = new HttpLambdaIntegration('lambdaintegration',
-    pongscoreLambda,
+    const lambdaintegrationgetpong = new HttpLambdaIntegration('lambdaintegration',
+    pongscoregetLambda,
   );
 
     filegetapi.addRoutes({
@@ -117,8 +117,8 @@ export class SampleStack extends Stack {
 
     filegetapi.addRoutes({
       path: '/pongscore', // Specify the path for the route
-      methods: [apigatewayv2.HttpMethod.POST], // Specify the HTTP methods for the route
-      integration: lambdaintegrationpostpong,
+      methods: [apigatewayv2.HttpMethod.GET], // Specify the HTTP methods for the route
+      integration: lambdaintegrationgetpong,
     });
     
     

@@ -128,7 +128,7 @@ export class SampleStack extends Stack {
     )
     
     // Permissions
-    const lambdas = [samples3lambda, apigLambda];
+    const lambdas = [samples3lambda, apigLambda, pongscoregetLambda];
     for (const lambda of lambdas) {
       lambda.addToRolePolicy(new iam.PolicyStatement({
         actions: ['s3:GetObject', 's3:PutObject'],
@@ -147,6 +147,7 @@ export class SampleStack extends Stack {
 
       outputBucket.grantWrite(lambda);
       dataTable.grantFullAccess(lambda);
+      pongScoreTable.grantFullAccess(lambda);
     }
     
     inputBucket.grantRead(samples3lambda);

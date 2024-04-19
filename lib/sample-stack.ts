@@ -95,9 +95,13 @@ export class SampleStack extends Stack {
     const filegetapi = new HttpApi(this, 'MyApi', {
       apiName: 'MyService',
       corsPreflight: {
-        //allowOrigins: ['https://holycrap872.github.io'],
-        allowMethods: [apigatewayv2.CorsHttpMethod.GET, apigatewayv2.CorsHttpMethod.POST, apigatewayv2.CorsHttpMethod.OPTIONS],
-        //allowHeaders: ['Content-Type'],
+        allowOrigins: ['https://holycrap872.github.io'],
+        allowMethods: [
+          apigatewayv2.CorsHttpMethod.GET,
+          apigatewayv2.CorsHttpMethod.POST,
+          apigatewayv2.CorsHttpMethod.OPTIONS,
+        ],
+        allowHeaders: ['Content-Type'],
         maxAge: Duration.days(10),
       },
     }); 

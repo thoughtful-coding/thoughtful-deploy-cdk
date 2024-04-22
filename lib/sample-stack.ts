@@ -91,13 +91,32 @@ export class SampleStack extends Stack {
         timeout: Duration.seconds(40),
       }
     );
+    const pongscorepostLambda = new lambda.DockerImageFunction(
+      this,
+      "pongscorelambda2",
+      {
+        code: lambda.DockerImageCode.fromEcr(dockerRepository, {tag: "latest", cmd: ["aws_src_sample.lambdas.pong_score_lambda.pong_score_get_lambda_handler"]}),//change this
+        environment: {
+          OUTPUT_BUCKET_NAME: outputBucket.bucketName,
+          //FILE_TYPE_COUNTER_TABLE_NAME: dataTable.tableName, no
+          REGION: "us-east-2",
+          PONG_SCORE_TABLE_NAME: pongScoreTable.tableName,
+        },
+        timeout: Duration.seconds(40),
+      }
+    );
     
     const filegetapi = new HttpApi(this, 'MyApi', {
       apiName: 'MyService',
       corsPreflight: {
-        //allowOrigins: ['https://holycrap872.github.io'],
-        allowMethods: [apigatewayv2.CorsHttpMethod.GET, apigatewayv2.CorsHttpMethod.POST, apigatewayv2.CorsHttpMethod.OPTIONS],
-        //allowHeaders: ['Content-Type'],
+        allowOrigins: ['https://holycrap872.github.io'],
+        allowMethods: [
+          apigatewayv2.CorsHttpMethod.GET,
+          apigatewayv2.CorsHttpMethod.POST,
+          apigatewayv2.CorsHttpMethod.OPTIONS,
+        ],
+        allowHeaders: ['Content-Type'],
+
         maxAge: Duration.days(10),
       },
     }); 
@@ -107,6 +126,9 @@ export class SampleStack extends Stack {
   );
     const lambdaintegrationgetpong = new HttpLambdaIntegration('lambdaintegration',
     pongscoregetLambda,
+  );
+  const lambdaintegrationpostpong = new HttpLambdaIntegration('lambdaintegration',
+    pongscorepostLambda,
   );
 
     filegetapi.addRoutes({
@@ -119,6 +141,11 @@ export class SampleStack extends Stack {
       path: '/pongscore', // Specify the path for the route
       methods: [apigatewayv2.HttpMethod.GET], // Specify the HTTP methods for the route
       integration: lambdaintegrationgetpong,
+    });
+    filegetapi.addRoutes({
+      path: '/pongscore', // Specify the path for the route
+      methods: [apigatewayv2.HttpMethod.POST], // Specify the HTTP methods for the route
+      integration: lambdaintegrationpostpong,
     });
     
     

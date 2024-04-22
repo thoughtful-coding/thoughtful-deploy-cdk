@@ -116,7 +116,6 @@ export class SampleStack extends Stack {
           apigatewayv2.CorsHttpMethod.OPTIONS,
         ],
         allowHeaders: ['Content-Type'],
-
         maxAge: Duration.days(10),
       },
     }); 

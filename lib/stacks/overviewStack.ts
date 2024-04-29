@@ -1,13 +1,11 @@
 import { Duration, Stack, StackProps } from 'aws-cdk-lib';
-import { Construct } from 'constructs';
 import { Dashboard , GraphWidget, } from 'aws-cdk-lib/aws-cloudwatch';
+import { Construct } from 'constructs';
 import { ResourceStack } from './resourceStack';
-import { ComputeStack } from './computeStack';
 
 
 export interface OverviewStackProps extends StackProps {
     readonly resourceStack: ResourceStack;
-    readonly computeStack: ComputeStack;
 }
 
 
@@ -22,9 +20,9 @@ export class OverviewStack extends Stack {
   
     // Widget for Lambda Invocations
     const invocationWidget = new GraphWidget({
-      title: 'STL Lambda Invocations',
+      title: 'Transform Lambda Invocations',
       left: [
-        props.computeStack.stlPostLambda.metricInvocations({
+        props.resourceStack.apiTransformationLambda.metricInvocations({
           statistic: 'Sum',
           period: Duration.minutes(1)
         })
@@ -34,9 +32,9 @@ export class OverviewStack extends Stack {
   
     // Widget for Lambda Errors
     const errorWidget = new GraphWidget({
-      title: 'STL Lambda Invocation Errors',
+      title: 'Transform Lambda Invocation Errors',
       left: [
-        props.computeStack.stlPostLambda.metricErrors({
+        props.resourceStack.apiTransformationLambda.metricErrors({
         statistic: 'Sum',
          period: Duration.minutes(1)
         })

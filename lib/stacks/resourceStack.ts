@@ -90,7 +90,7 @@ export class ResourceStack extends Stack {
       this,
       "FileTriggerTest",
       {
-        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {tag: "latest", cmd: ["aws_src_sample.lambdas.s3_put_lambda.s3_put_lambda_handler"]}),
+        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {tagOrDigest: "latest", cmd: ["aws_src_sample.lambdas.s3_put_lambda.s3_put_lambda_handler"]}),
         environment: {
           OUTPUT_BUCKET_NAME: this.outputBucket.bucketName,
           FILE_TYPE_COUNTER_TABLE_NAME: this.tranformationCounterTable.tableName,
@@ -104,7 +104,7 @@ export class ResourceStack extends Stack {
       this,
       "APITransformationLambda",
       {
-        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {tag: "latest", cmd: ["aws_src_sample.lambdas.apig_post_lambda.api_post_lambda_handler"]}),
+        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {tagOrDigest: "latest", cmd: ["aws_src_sample.lambdas.apig_post_lambda.api_post_lambda_handler"]}),
         environment: {
           OUTPUT_BUCKET_NAME: this.outputBucket.bucketName,
           FILE_TYPE_COUNTER_TABLE_NAME: this.tranformationCounterTable.tableName,
@@ -118,7 +118,7 @@ export class ResourceStack extends Stack {
       this,
       "PongScoreGetLambda",
       {
-        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {tag: "latest", cmd: ["aws_src_sample.lambdas.pong_score_lambda.pong_score_lambda_handler"]}),//change this
+        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {tagOrDigest: "latest", cmd: ["aws_src_sample.lambdas.pong_score_lambda.pong_score_lambda_handler"]}),//change this
         environment: {
           OUTPUT_BUCKET_NAME: this.outputBucket.bucketName,
           REGION: "us-east-2",

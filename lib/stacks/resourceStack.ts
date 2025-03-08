@@ -75,7 +75,7 @@ export class ResourceStack extends Stack {
     this.sampleAppAPI = new HttpApi(this, 'SampleAppAPI', {
       apiName: 'SampleAppAPI',
       corsPreflight: {
-        allowOrigins: ['https://holycrap872.github.io'],
+        allowOrigins: ['https://eric-rizzi.github.io'],
         allowMethods: [
           CorsHttpMethod.GET,
           CorsHttpMethod.POST,

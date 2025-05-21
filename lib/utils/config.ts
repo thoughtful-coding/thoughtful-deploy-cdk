@@ -5,6 +5,9 @@ export interface EnvironmentProps {
     region: string;
 }
 
+export const GOOGLE_CLIENT_ID =
+  "111269738814-64jdhnq0krkbgdk7f1lubtf7oc1fkr8n.apps.googleusercontent.com";
+
 export class CdkConfig {
     // Function to fetch environment using the defined interface
     static getEnvironment(): EnvironmentProps {

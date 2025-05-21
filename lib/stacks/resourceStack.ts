@@ -8,7 +8,8 @@ import * as s3Notifications from 'aws-cdk-lib/aws-s3-notifications';
 import { CorsHttpMethod, HttpApi, HttpMethod } from 'aws-cdk-lib/aws-apigatewayv2';
 import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import { Construct } from 'constructs';
-import { EnvironmentProps } from '../utils/config';
+import { EnvironmentProps, GOOGLE_CLIENT_ID } from '../utils/config';
+import { HttpJwtAuthorizer } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 
 
 export interface ResourceStackProps extends StackProps {
@@ -224,35 +225,39 @@ export class ResourceStack extends Stack {
       this.learningEntriesLambda,
     );
 
+    const googleJwtAuthorizer = new HttpJwtAuthorizer("GoogleJwtAuthorizer", 'GoogleJwtAuthorizer', {
+      identitySource: ['$request.header.Authorization'],
+      jwtAudience: [GOOGLE_CLIENT_ID],
+    });
 
     this.sampleAppAPI.addRoutes({
-      path: '/transform_csv', // Specify the path for the route
-      methods: [HttpMethod.POST], // Specify the HTTP methods for the route
+      path: '/transform_csv',
+      methods: [HttpMethod.POST],
       integration: lambdaintegrationpostcsv,
     });
 
     this.sampleAppAPI.addRoutes({
-      path: '/pongscore', // Specify the path for the route
-      methods: [HttpMethod.GET], // Specify the HTTP methods for the route
+      path: '/pongscore',
+      methods: [HttpMethod.GET],
       integration: lambdaintegrationgetpong,
     });
     this.sampleAppAPI.addRoutes({
-      path: '/pongscore', // Specify the path for the route
-      methods: [HttpMethod.POST], // Specify the HTTP methods for the route
+      path: '/pongscore',
+      methods: [HttpMethod.POST],
       integration: lambdaintegrationpostpong,
     });
     this.sampleAppAPI.addRoutes({
       path: '/progress',
       methods: [HttpMethod.GET, HttpMethod.PUT],
       integration: userProgressIntegration,
-      // authorizer: authorizer, // Uncomment and use your defined authorizer
+      authorizer: googleJwtAuthorizer,
     });
 
     this.sampleAppAPI.addRoutes({
       path: '/learning-entries',
       methods: [HttpMethod.POST, HttpMethod.GET],
       integration: learningEntriesIntegration,
-      // authorizer: authorizer, // Uncomment and use your defined authorizer
+      authorizer: googleJwtAuthorizer,
     });
 
     // Placeholder for instructor route - might point to the same learningEntriesLambda
@@ -261,7 +266,7 @@ export class ResourceStack extends Stack {
       path: '/instructor/learning-entries',
       methods: [HttpMethod.GET],
       integration: learningEntriesIntegration, // Could be a different lambda/integration with stricter auth
-      // authorizer: instructorAuthorizer, // A specific authorizer for instructors
+      authorizer: googleJwtAuthorizer,
     });
 
     

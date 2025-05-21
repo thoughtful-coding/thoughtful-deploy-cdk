@@ -20,8 +20,13 @@ export class ResourceStack extends Stack {
 
   readonly inputBucket: s3.Bucket;
   readonly outputBucket: s3.Bucket;
+  
+  // DDB Tables
   readonly tranformationCounterTable: dynamodb.Table;
   readonly pongScoreTable: dynamodb.Table;
+  readonly userProgressTable: dynamodb.Table;
+  readonly learningEntriesTable: dynamodb.Table;
+
   readonly dockerRepository: ecr.IRepository;
   readonly sampleAppAPI: HttpApi;
 
@@ -61,7 +66,22 @@ export class ResourceStack extends Stack {
       partitionKey: { name: 'user', type: dynamodb.AttributeType.STRING },
       tableName: 'PongScoreTable',
       removalPolicy: RemovalPolicy.RETAIN, 
-    }); 
+    });
+
+    this.userProgressTable = new dynamodb.Table(this, 'UserProgressTable', {
+      partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      tableName: 'UserProgressTable', // Or make it environment-specific
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST, // Or provisioned
+      removalPolicy: RemovalPolicy.RETAIN, // Adjust as needed
+    });
+
+    this.learningEntriesTable = new dynamodb.Table(this, 'LearningEntriesTable', {
+      partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'entryId', type: dynamodb.AttributeType.STRING },
+      tableName: 'LearningEntriesTable', // Or make it environment-specific
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.RETAIN, // Adjust as needed
+    });
 
     this.dockerRepository = new ecr.Repository(
       this,

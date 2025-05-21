@@ -34,6 +34,8 @@ export class ResourceStack extends Stack {
   readonly apiTransformationLambda: lambda.Function;
   readonly pongScoreGetLambda: lambda.Function;
   readonly pongScoreSetLambda: lambda.Function;
+  readonly userProgressLambda: lambda.Function;
+  readonly learningEntriesLambda: lambda.Function;
 
   constructor(scope: Construct, id: string, props: ResourceStackProps) {
     super(scope, id, props);
@@ -95,13 +97,14 @@ export class ResourceStack extends Stack {
     this.sampleAppAPI = new HttpApi(this, 'SampleAppAPI', {
       apiName: 'SampleAppAPI',
       corsPreflight: {
-        allowOrigins: ['https://eric-rizzi.github.io'],
+        allowOrigins: ['https://eric-rizzi.github.io', 'http://localhost:5173'],
         allowMethods: [
           CorsHttpMethod.GET,
           CorsHttpMethod.POST,
+          CorsHttpMethod.PUT,
           CorsHttpMethod.OPTIONS,
         ],
-        allowHeaders: ['Content-Type'],
+        allowHeaders: ['Content-Type', 'Authorization'],
         maxAge: Duration.days(10),
       },
     }); 
@@ -110,11 +113,14 @@ export class ResourceStack extends Stack {
       this,
       "FileTriggerTest",
       {
-        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {tagOrDigest: "latest", cmd: ["aws_src_sample.lambdas.s3_put_lambda.s3_put_lambda_handler"]}),
+        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {
+          tagOrDigest: "latest",
+          cmd: ["aws_src_sample.lambdas.s3_put_lambda.s3_put_lambda_handler"],
+        }),
         environment: {
           OUTPUT_BUCKET_NAME: this.outputBucket.bucketName,
           FILE_TYPE_COUNTER_TABLE_NAME: this.tranformationCounterTable.tableName,
-          REGION: "us-east-2",
+          REGION: props.envProps.region,
         },
         timeout: Duration.seconds(40),
       }
@@ -124,11 +130,14 @@ export class ResourceStack extends Stack {
       this,
       "APITransformationLambda",
       {
-        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {tagOrDigest: "latest", cmd: ["aws_src_sample.lambdas.apig_post_lambda.api_post_lambda_handler"]}),
+        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {
+          tagOrDigest: "latest",
+          cmd: ["aws_src_sample.lambdas.apig_post_lambda.api_post_lambda_handler"],
+        }),
         environment: {
           OUTPUT_BUCKET_NAME: this.outputBucket.bucketName,
           FILE_TYPE_COUNTER_TABLE_NAME: this.tranformationCounterTable.tableName,
-          REGION: "us-east-2",
+          REGION: props.envProps.region,
         },
         timeout: Duration.seconds(40),
       }
@@ -138,10 +147,13 @@ export class ResourceStack extends Stack {
       this,
       "PongScoreGetLambda",
       {
-        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {tagOrDigest: "latest", cmd: ["aws_src_sample.lambdas.pong_score_lambda.pong_score_lambda_handler"]}),//change this
+        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {
+          tagOrDigest: "latest",
+          cmd: ["aws_src_sample.lambdas.pong_score_lambda.pong_score_lambda_handler"],
+        }),
         environment: {
           OUTPUT_BUCKET_NAME: this.outputBucket.bucketName,
-          REGION: "us-east-2",
+          REGION: props.envProps.region,
           PONG_SCORE_TABLE_NAME: this.pongScoreTable.tableName,
         },
         timeout: Duration.seconds(40),
@@ -152,25 +164,66 @@ export class ResourceStack extends Stack {
       this,
       "PongScoreSetLambda",
       {
-        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {tag: "latest", cmd: ["aws_src_sample.lambdas.pong_score_lambda.pong_score_get_lambda_handler"]}),//change this
+        code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {
+          tag: "latest",
+          cmd: ["aws_src_sample.lambdas.pong_score_lambda.pong_score_get_lambda_handler"],
+        }),
         environment: {
           OUTPUT_BUCKET_NAME: this.outputBucket.bucketName,
-          REGION: "us-east-2",
+          REGION: props.envProps.region,
           PONG_SCORE_TABLE_NAME: this.pongScoreTable.tableName,
         },
         timeout: Duration.seconds(40),
       }
     );
 
-    const lambdaintegrationpostcsv = new HttpLambdaIntegration('lambdaintegration',
+    this.userProgressLambda = new lambda.DockerImageFunction(this, "UserProgressLambda", {
+      code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {
+        tagOrDigest: "latest", // Or your specific image tag
+        cmd: ["aws_src_sample.lambdas.user_progress_lambda.user_progress_lambda_handler"]
+      }),
+      environment: {
+        USER_PROGRESS_TABLE_NAME: this.userProgressTable.tableName,
+        REGION: props.envProps.region,
+      },
+      timeout: Duration.seconds(30),
+      memorySize: 256,
+    });
+
+    this.learningEntriesLambda = new lambda.DockerImageFunction(this, "LearningEntriesLambda", {
+      code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {
+        tagOrDigest: "latest", // Or your specific image tag
+        cmd: ["aws_src_sample.lambdas.learning_entries_lambda.learning_entries_lambda_handler"]
+      }),
+      environment: {
+        LEARNING_ENTRIES_TABLE_NAME: this.learningEntriesTable.tableName,
+        REGION: props.envProps.region,
+      },
+      timeout: Duration.seconds(30),
+      memorySize: 256,
+    });
+
+    const lambdaintegrationpostcsv = new HttpLambdaIntegration(
+      'lambdaintegration',
       this.apiTransformationLambda,
     );
-    const lambdaintegrationgetpong = new HttpLambdaIntegration('lambdaintegration',
+    const lambdaintegrationgetpong = new HttpLambdaIntegration(
+      'lambdaintegration',
       this.pongScoreGetLambda,
     );
-    const lambdaintegrationpostpong = new HttpLambdaIntegration('lambdaintegration',
+    const lambdaintegrationpostpong = new HttpLambdaIntegration(
+      'lambdaintegration',
       this.pongScoreSetLambda,
     );
+    const userProgressIntegration = new HttpLambdaIntegration(
+      'UserProgressIntegration',
+      this.userProgressLambda,
+    );
+    const learningEntriesIntegration = new HttpLambdaIntegration(
+      'LearningEntriesIntegration',
+      this.learningEntriesLambda,
+    );
+
 
     this.sampleAppAPI.addRoutes({
       path: '/transform_csv', // Specify the path for the route
@@ -188,22 +241,57 @@ export class ResourceStack extends Stack {
       methods: [HttpMethod.POST], // Specify the HTTP methods for the route
       integration: lambdaintegrationpostpong,
     });
+    this.sampleAppAPI.addRoutes({
+      path: '/progress',
+      methods: [HttpMethod.GET, HttpMethod.PUT],
+      integration: userProgressIntegration,
+      // authorizer: authorizer, // Uncomment and use your defined authorizer
+    });
+
+    this.sampleAppAPI.addRoutes({
+      path: '/learning-entries',
+      methods: [HttpMethod.POST, HttpMethod.GET],
+      integration: learningEntriesIntegration,
+      // authorizer: authorizer, // Uncomment and use your defined authorizer
+    });
+
+    // Placeholder for instructor route - might point to the same learningEntriesLambda
+    // or a dedicated one. Ensure specific authorization for this route.
+    this.sampleAppAPI.addRoutes({
+      path: '/instructor/learning-entries',
+      methods: [HttpMethod.GET],
+      integration: learningEntriesIntegration, // Could be a different lambda/integration with stricter auth
+      // authorizer: instructorAuthorizer, // A specific authorizer for instructors
+    });
+
     
     this.inputBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED_PUT,
       new s3Notifications.LambdaDestination(this.fileTriggerLambda),
     )
     
-    const lambdas = [this.fileTriggerLambda, this.apiTransformationLambda, this.pongScoreGetLambda];
+    // Permissions
+    this.userProgressTable.grantReadWriteData(this.userProgressLambda);
+    this.learningEntriesTable.grantReadWriteData(this.learningEntriesLambda);
+
+    const lambdas = [
+      this.fileTriggerLambda,
+      this.apiTransformationLambda,
+      this.pongScoreGetLambda,
+      this.userProgressLambda,
+      this.learningEntriesLambda,
+    ];
     for (const lambda of lambdas) {
       lambda.addToRolePolicy(new iam.PolicyStatement({
         actions: ['s3:GetObject', 's3:PutObject'],
         resources: [`${this.inputBucket.bucketArn}/*`,`${this.outputBucket.bucketArn}/*`],
       }));
       lambda.addToRolePolicy(new iam.PolicyStatement({
-        actions: ['ecr:GetDownloadUrlForLayer',
-        'ecr:BatchGetImage',
-        'ecr:BatchCheckLayerAvailability'],
+        actions: [
+          'ecr:GetDownloadUrlForLayer',
+          'ecr:BatchGetImage',
+          'ecr:BatchCheckLayerAvailability',
+        ],
         resources: [this.dockerRepository.repositoryArn],
       }));
       lambda.addToRolePolicy(new iam.PolicyStatement({

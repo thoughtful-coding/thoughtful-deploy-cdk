@@ -226,7 +226,6 @@ export class ResourceStack extends Stack {
     );
 
     const googleJwtAuthorizer = new HttpJwtAuthorizer('GoogleJwtAuthorizer', 'https://accounts.google.com', {
-      identitySource: ['$request.header.Authorization'],
       jwtAudience: [GOOGLE_CLIENT_ID],
     });
 

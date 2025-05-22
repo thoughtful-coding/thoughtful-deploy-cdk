@@ -187,7 +187,7 @@ export class ResourceStack extends Stack {
         USER_PROGRESS_TABLE_NAME: this.userProgressTable.tableName,
         REGION: props.envProps.region,
       },
-      timeout: Duration.seconds(30),
+      timeout: Duration.seconds(20),
       memorySize: 256,
     });
 
@@ -200,7 +200,7 @@ export class ResourceStack extends Stack {
         LEARNING_ENTRIES_TABLE_NAME: this.learningEntriesTable.tableName,
         REGION: props.envProps.region,
       },
-      timeout: Duration.seconds(30),
+      timeout: Duration.seconds(20),
       memorySize: 256,
     });
 

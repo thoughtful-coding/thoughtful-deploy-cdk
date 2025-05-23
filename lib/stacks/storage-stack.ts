@@ -27,8 +27,9 @@ export class StorageStack extends Stack {
       removalPolicy: RemovalPolicy.RETAIN,
       encryption: s3.BucketEncryption.S3_MANAGED,
       enforceSSL: true,
-      publicReadAccess: true,
       objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_ENFORCED,
+      publicReadAccess: true,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ACLS_ONLY,
     });
 
     // DynamoDB Tables

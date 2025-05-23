@@ -45,18 +45,14 @@ export class APIGatewayStack extends Stack {
       handler: props.apiTransformationLambda,
     });
 
-    const googleJwtAuthorizer = new HttpJwtAuthorizer(
-      'GoogleJwtAuthorizer',
-      'https://accounts.google.com',
-      {
-        jwtAudience: [GOOGLE_CLIENT_ID],
-      }
-    );
+    const googleJwtAuthorizer = new HttpJwtAuthorizer('GoogleJwtAuthorizer', 'https://accounts.google.com', {
+      jwtAudience: [GOOGLE_CLIENT_ID],
+    });
 
     new ApiRoute(this, 'UserProgressRoute', {
       httpApi: this.httpApi,
       routePath: '/progress',
-      methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST],
+      methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST, apigwv2.HttpMethod.PUT],
       handler: props.userProgressLambda,
       authorizer: googleJwtAuthorizer,
     });
@@ -64,7 +60,7 @@ export class APIGatewayStack extends Stack {
     new ApiRoute(this, 'LearningEntryRoute', {
       httpApi: this.httpApi,
       routePath: '/learning-entries',
-      methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST],
+      methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST, apigwv2.HttpMethod.PUT],
       handler: props.learningEntriesLambda,
       authorizer: googleJwtAuthorizer,
     });

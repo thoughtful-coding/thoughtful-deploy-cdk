@@ -28,28 +28,28 @@ const foundationalStack = new FoundationalResourcesStack(
   }
 );
 
-const storageStack = new StorageStack(app, 'SampleStorageStack', {
-  envProps: envProps,
-});
+// const storageStack = new StorageStack(app, 'SampleStorageStack', {
+//   envProps: envProps,
+// });
 
-const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
-  envProps: envProps,
-  dockerRepository: foundationalStack.dockerRepository,
-  imageTag: imageTag || 'latest', // Ensure this fallback is acceptable or handle error
-  inputBucket: storageStack.inputBucket,
-  outputBucket: storageStack.outputBucket,
-  transformationCounterTable: storageStack.transformationCounterTable,
-  userProgressTable: storageStack.userProgressTable,
-  learningEntriesTable: storageStack.learningEntriesTable,
-});
+// const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
+//   envProps: envProps,
+//   dockerRepository: foundationalStack.dockerRepository,
+//   imageTag: imageTag || 'latest', // Ensure this fallback is acceptable or handle error
+//   inputBucket: storageStack.inputBucket,
+//   outputBucket: storageStack.outputBucket,
+//   transformationCounterTable: storageStack.transformationCounterTable,
+//   userProgressTable: storageStack.userProgressTable,
+//   learningEntriesTable: storageStack.learningEntriesTable,
+// });
 
-const apiGatewayStack = new APIGatewayStack(app, 'SampleApiGatewayStack', {
-  envProps: envProps,
-  apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
-  userProgressLambda: lambdaComputeStack.userProgressLambda,
-  learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
-});
+// const apiGatewayStack = new APIGatewayStack(app, 'SampleApiGatewayStack', {
+//   envProps: envProps,
+//   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
+//   userProgressLambda: lambdaComputeStack.userProgressLambda,
+//   learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
+// });
 
-const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
-  apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
-});
+// const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
+//   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
+// });

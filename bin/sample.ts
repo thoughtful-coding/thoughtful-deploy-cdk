@@ -9,16 +9,16 @@ import { OverviewStack } from '../lib/stacks/overview-stack';
 const app = new cdk.App();
 const envProps = CdkConfig.getEnvironment();
 
-const imageTag = app.node.tryGetContext('imageTag') as string | undefined;
-if (!imageTag && process.env.CI) {
-  throw new Error(
-    "Context variable 'imageTag' must be passed to the CDK process in CI."
-  );
-} else if (!imageTag) {
-  console.warn(
-    "Warning: Context variable 'imageTag' was not provided. Using 'latest' as fallback for Lambda image tag."
-  );
-}
+// const imageTag = app.node.tryGetContext('imageTag') as string | undefined;
+// if (!imageTag && process.env.CI) {
+//   throw new Error(
+//     "Context variable 'imageTag' must be passed to the CDK process in CI."
+//   );
+// } else if (!imageTag) {
+//   console.warn(
+//     "Warning: Context variable 'imageTag' was not provided. Using 'latest' as fallback for Lambda image tag."
+//   );
+// }
 
 const foundationalStack = new FoundationalResourcesStack(
   app,

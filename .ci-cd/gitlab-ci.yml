@@ -34,7 +34,7 @@ run_unit_tests:
 
 deploy:
   stage: deploy
-  image: amazon/aws-cli:latest
+  image: node:latest
   before_script:
     - npm install -g aws-cdk
     - npm install

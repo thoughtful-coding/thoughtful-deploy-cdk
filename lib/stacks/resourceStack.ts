@@ -178,7 +178,7 @@ export class ResourceStack extends Stack {
       }
     );
 
-    this.userProgressLambda = new lambda.DockerImageFunction(this, "UserProgressLambda", {
+    this.userProgressLambda = new lambda.DockerImageFunction(this, "UserProgressLmbda", {
       code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {
         tagOrDigest: "latest",
         cmd: ["aws_src_sample.lambdas.user_progress_lambda.user_progress_lambda_handler"]

@@ -180,27 +180,27 @@ export class ResourceStack extends Stack {
 
     this.userProgressLambda = new lambda.DockerImageFunction(this, "UserProgressLambda", {
       code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {
-        tagOrDigest: "latest", // Or your specific image tag
+        tagOrDigest: "latest",
         cmd: ["aws_src_sample.lambdas.user_progress_lambda.user_progress_lambda_handler"]
       }),
       environment: {
         USER_PROGRESS_TABLE_NAME: this.userProgressTable.tableName,
         REGION: props.envProps.region,
       },
-      timeout: Duration.seconds(20),
+      timeout: Duration.seconds(30),
       memorySize: 256,
     });
 
     this.learningEntriesLambda = new lambda.DockerImageFunction(this, "LearningEntriesLambda", {
       code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {
-        tagOrDigest: "latest", // Or your specific image tag
+        tagOrDigest: "latest",
         cmd: ["aws_src_sample.lambdas.learning_entries_lambda.learning_entries_lambda_handler"]
       }),
       environment: {
         LEARNING_ENTRIES_TABLE_NAME: this.learningEntriesTable.tableName,
         REGION: props.envProps.region,
       },
-      timeout: Duration.seconds(20),
+      timeout: Duration.seconds(30),
       memorySize: 256,
     });
 

@@ -43,12 +43,12 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
   learningEntriesTable: storageStack.learningEntriesTable,
 });
 
-// const apiGatewayStack = new APIGatewayStack(app, 'SampleApiGatewayStack', {
-//   envProps: envProps,
-//   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
-//   userProgressLambda: lambdaComputeStack.userProgressLambda,
-//   learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
-// });
+const apiGatewayStack = new APIGatewayStack(app, 'SampleApiGatewayStack', {
+  envProps: envProps,
+  apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
+  userProgressLambda: lambdaComputeStack.userProgressLambda,
+  learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
+});
 
 // const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
 //   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,

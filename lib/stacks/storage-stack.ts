@@ -22,12 +22,14 @@ export class StorageStack extends Stack {
     super(scope, id, props);
 
     const outputBucketName = `${props.envProps.account}-${props.envProps.region}-transformation-output-bucket`;
-    const outputBucketNameConstruct = new StandardBucket(this, 'TransformationOutputBucket', {
+    this.outputBucket = new s3.Bucket(this, 'TransformationOutputBucket', {
       bucketName: outputBucketName,
       removalPolicy: RemovalPolicy.RETAIN,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
       publicReadAccess: true,
+      objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_ENFORCED,
     });
-    this.outputBucket = outputBucketNameConstruct.bucket;
 
     // DynamoDB Tables
     const transformationTableConstruct = new StandardTable(this, 'TransformationCounterTableConstruct', {

@@ -1,5 +1,5 @@
 include:
-- template: Security/SAST.gitlab-ci.yml
+  - template: Security/SAST.gitlab-ci.yml
 
 stages:
   - lint
@@ -34,12 +34,32 @@ run_unit_tests:
 
 deploy:
   stage: deploy
-  image: node:latest
+  image: amazon/aws-cli:latest
   before_script:
     - npm install -g aws-cdk
     - npm install
   script:
-    - cdk diff
-    - cdk deploy --all --require-approval never
-  only:
-    - main
+    - |
+      EFFECTIVE_IMAGE_TAG=""
+
+      if [ -n "${IMAGE_TAG}" ]; then # Check if IMAGE_TAG was passed (e.g., by the upstream trigger from src pipeline)
+        echo "IMAGE_TAG is set (value: '${IMAGE_TAG}'). Using this specific tag."
+        EFFECTIVE_IMAGE_TAG="${IMAGE_TAG}"
+      else
+        echo "IMAGE_TAG was not set by trigger or manual input. Defaulting to 'prod' tag."
+        EFFECTIVE_IMAGE_TAG="prod" # Default to the 'prod' Docker tag
+      fi
+    - echo "Using image tag for CDK deployment ${EFFECTIVE_IMAGE_TAG}"
+    - cdk diff --all --context imageTag="${EFFECTIVE_IMAGE_TAG}" || echo "No changes detected by cdk diff or diff command failed."
+    - cdk deploy --all --require-approval never --context imageTag="${EFFECTIVE_IMAGE_TAG}"
+  rules:
+    # This job will run if:
+    # 1. Triggered by an upstream pipeline (IMAGE_TAG should be present from src pipeline's CI_COMMIT_SHORT_SHA)
+    # 2. A commit is pushed/merged to the default branch (IMAGE_TAG will be empty, defaults to 'prod')
+    # 3. Manually started from the web UI (user can optionally provide IMAGE_TAG, otherwise defaults to 'prod')
+    - if: '$CI_PIPELINE_SOURCE == "trigger"'
+      when: on_success
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: on_success
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: on_success

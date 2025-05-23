@@ -1,10 +1,55 @@
-#!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { ResourceStack } from '../lib/stacks/resourceStack';
-import { OverviewStack } from '../lib/stacks/overviewStack';
 import { CdkConfig } from '../lib/utils/config';
+import { FoundationalResourcesStack } from '../lib/stacks/foundational-resources-stack';
+import { StorageStack } from '../lib/stacks/storage-stack';
+import { ComputeStack } from '../lib/stacks/compute-stack';
+import { APIGatewayStack } from '../lib/stacks/api-gateway-stack';
+import { OverviewStack } from '../lib/stacks/overview-stack';
 
 const app = new cdk.App();
+const envProps = CdkConfig.getEnvironment();
 
-const resourceStack = new ResourceStack(app, 'SampleResourceStack', {envProps: CdkConfig.getEnvironment()});
-const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {resourceStack: resourceStack});
+const imageTag = app.node.tryGetContext('imageTag') as string | undefined;
+if (!imageTag && process.env.CI) {
+  throw new Error(
+    "Context variable 'imageTag' must be passed to the CDK process in CI."
+  );
+} else if (!imageTag) {
+  console.warn(
+    "Warning: Context variable 'imageTag' was not provided. Using 'latest' as fallback for Lambda image tag."
+  );
+}
+
+const foundationalStack = new FoundationalResourcesStack(
+  app,
+  'SampleFoundationalResourcesStack',
+  {
+    envProps: envProps,
+  }
+);
+
+const storageStack = new StorageStack(app, 'SampleStorageStack', {
+  envProps: envProps,
+});
+
+const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
+  envProps: envProps,
+  dockerRepository: foundationalStack.dockerRepository,
+  imageTag: imageTag || 'latest', // Ensure this fallback is acceptable or handle error
+  inputBucket: storageStack.inputBucket,
+  outputBucket: storageStack.outputBucket,
+  transformationCounterTable: storageStack.transformationCounterTable,
+  userProgressTable: storageStack.userProgressTable,
+  learningEntriesTable: storageStack.learningEntriesTable,
+});
+
+const apiGatewayStack = new APIGatewayStack(app, 'SampleApiGatewayStack', {
+  envProps: envProps,
+  apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
+  userProgressLambda: lambdaComputeStack.userProgressLambda,
+  learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
+});
+
+const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
+  apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
+});

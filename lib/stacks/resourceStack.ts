@@ -35,8 +35,6 @@ export class ResourceStack extends Stack {
   readonly apiTransformationLambda: lambda.Function;
   readonly pongScoreGetLambda: lambda.Function;
   readonly pongScoreSetLambda: lambda.Function;
-  readonly userProgressLambda: lambda.Function;
-  readonly learningEntriesLambda: lambda.Function;
 
   constructor(scope: Construct, id: string, props: ResourceStackProps) {
     super(scope, id, props);
@@ -178,32 +176,6 @@ export class ResourceStack extends Stack {
       }
     );
 
-    this.userProgressLambda = new lambda.DockerImageFunction(this, "UserProgressLmbda", {
-      code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {
-        tagOrDigest: "latest",
-        cmd: ["aws_src_sample.lambdas.user_progress_lambda.user_progress_lambda_handler"]
-      }),
-      environment: {
-        USER_PROGRESS_TABLE_NAME: this.userProgressTable.tableName,
-        REGION: props.envProps.region,
-      },
-      timeout: Duration.seconds(30),
-      memorySize: 256,
-    });
-
-    this.learningEntriesLambda = new lambda.DockerImageFunction(this, "LearningEntriesLambda", {
-      code: lambda.DockerImageCode.fromEcr(this.dockerRepository, {
-        tagOrDigest: "latest",
-        cmd: ["aws_src_sample.lambdas.learning_entries_lambda.learning_entries_lambda_handler"]
-      }),
-      environment: {
-        LEARNING_ENTRIES_TABLE_NAME: this.learningEntriesTable.tableName,
-        REGION: props.envProps.region,
-      },
-      timeout: Duration.seconds(30),
-      memorySize: 256,
-    });
-
     const lambdaintegrationpostcsv = new HttpLambdaIntegration(
       'lambdaintegration',
       this.apiTransformationLambda,
@@ -215,14 +187,6 @@ export class ResourceStack extends Stack {
     const lambdaintegrationpostpong = new HttpLambdaIntegration(
       'lambdaintegration',
       this.pongScoreSetLambda,
-    );
-    const userProgressIntegration = new HttpLambdaIntegration(
-      'UserProgressIntegration',
-      this.userProgressLambda,
-    );
-    const learningEntriesIntegration = new HttpLambdaIntegration(
-      'LearningEntriesIntegration',
-      this.learningEntriesLambda,
     );
 
     const googleJwtAuthorizer = new HttpJwtAuthorizer('GoogleJwtAuthorizer', 'https://accounts.google.com', {
@@ -252,38 +216,17 @@ export class ResourceStack extends Stack {
       authorizer: googleJwtAuthorizer,
     });
 
-    this.sampleAppAPI.addRoutes({
-      path: '/learning-entries',
-      methods: [HttpMethod.POST, HttpMethod.GET],
-      integration: learningEntriesIntegration,
-      authorizer: googleJwtAuthorizer,
-    });
-
-    // Placeholder for instructor route - might point to the same learningEntriesLambda
-    // or a dedicated one. Ensure specific authorization for this route.
-    this.sampleAppAPI.addRoutes({
-      path: '/instructor/learning-entries',
-      methods: [HttpMethod.GET],
-      integration: learningEntriesIntegration, // Could be a different lambda/integration with stricter auth
-      authorizer: googleJwtAuthorizer,
-    });
-
-    
     this.inputBucket.addEventNotification(
       s3.EventType.OBJECT_CREATED_PUT,
       new s3Notifications.LambdaDestination(this.fileTriggerLambda),
     )
     
     // Permissions
-    this.userProgressTable.grantReadWriteData(this.userProgressLambda);
-    this.learningEntriesTable.grantReadWriteData(this.learningEntriesLambda);
 
     const lambdas = [
       this.fileTriggerLambda,
       this.apiTransformationLambda,
       this.pongScoreGetLambda,
-      this.userProgressLambda,
-      this.learningEntriesLambda,
     ];
     for (const lambda of lambdas) {
       lambda.addToRolePolicy(new iam.PolicyStatement({

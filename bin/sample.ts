@@ -28,9 +28,9 @@ const foundationalStack = new FoundationalResourcesStack(
   }
 );
 
-// const storageStack = new StorageStack(app, 'SampleStorageStack', {
-//   envProps: envProps,
-// });
+const storageStack = new StorageStack(app, 'SampleStorageStack', {
+  envProps: envProps,
+});
 
 // const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
 //   envProps: envProps,

@@ -36,7 +36,6 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
   envProps: envProps,
   dockerRepository: foundationalStack.dockerRepository,
   imageTag: imageTag || 'latest', // Ensure this fallback is acceptable or handle error
-  inputBucket: storageStack.inputBucket,
   outputBucket: storageStack.outputBucket,
   transformationCounterTable: storageStack.transformationCounterTable,
   userProgressTable: storageStack.userProgressTable,
@@ -44,7 +43,6 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
 });
 
 const apiGatewayStack = new APIGatewayStack(app, 'SampleApiGatewayStack', {
-  envProps: envProps,
   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
   userProgressLambda: lambdaComputeStack.userProgressLambda,
   learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,

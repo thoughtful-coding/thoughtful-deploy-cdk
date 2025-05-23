@@ -1,42 +1,12 @@
 import { Stack, StackProps, Duration, CfnOutput } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
-import { HttpLambdaIntegration } from 'aws-cdk-lib/aws-apigatewayv2-integrations';
 import { Construct } from 'constructs';
-import { EnvironmentProps, GOOGLE_CLIENT_ID } from '../utils/config'; // Assuming path
 import { HttpJwtAuthorizer } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
+import { ApiRoute } from '../constructs/api-route';
+import { GOOGLE_CLIENT_ID } from '../utils/config';
 
-// Props for our custom ApiRoute construct
-interface ApiRouteProps {
-  readonly httpApi: apigwv2.HttpApi;
-  readonly routePath: string;
-  readonly methods: apigwv2.HttpMethod[];
-  readonly handler: lambda.IFunction;
-  readonly authorizer?: apigwv2.IHttpRouteAuthorizer;
-}
-
-// Custom construct to define an API route with Lambda integration
-class ApiRoute extends Construct {
-  constructor(scope: Construct, id: string, props: ApiRouteProps) {
-    super(scope, id);
-
-    const lambdaIntegration = new HttpLambdaIntegration(
-      `${id}Integration`,
-      props.handler
-    );
-
-    props.httpApi.addRoutes({
-      path: props.routePath,
-      methods: props.methods,
-      integration: lambdaIntegration,
-      authorizer: props.authorizer,
-    });
-  }
-}
-
-// Props for the APIGatewayStack
 export interface APIGatewayStackProps extends StackProps {
-  readonly envProps: EnvironmentProps; // Though not directly used here, kept for consistency
   readonly apiTransformationLambda: lambda.IFunction;
   readonly userProgressLambda: lambda.IFunction;
   readonly learningEntriesLambda: lambda.IFunction;

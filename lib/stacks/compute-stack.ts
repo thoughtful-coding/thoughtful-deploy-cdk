@@ -13,7 +13,6 @@ export interface ComputeStackProps extends StackProps {
   readonly envProps: EnvironmentProps;
   readonly dockerRepository: ecr.IRepository;
   readonly imageTag: string;
-  readonly inputBucket: s3.IBucket;
   readonly outputBucket: s3.IBucket;
   readonly transformationCounterTable: dynamodb.ITable;
   readonly userProgressTable: dynamodb.ITable;

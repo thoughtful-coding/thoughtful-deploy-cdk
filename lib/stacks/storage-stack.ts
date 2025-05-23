@@ -13,7 +13,6 @@ export interface StorageStackProps extends StackProps {
 
 export class StorageStack extends Stack {
   // Public properties to expose created resources to other stacks
-  public readonly inputBucket: s3.IBucket;
   public readonly outputBucket: s3.IBucket;
   public readonly transformationCounterTable: dynamodb.ITable;
   public readonly userProgressTable: dynamodb.ITable;
@@ -22,72 +21,41 @@ export class StorageStack extends Stack {
   constructor(scope: Construct, id: string, props: StorageStackProps) {
     super(scope, id, props);
 
-    // S3 Buckets
-    const inputBucketName = `${props.envProps.account}-${props.envProps.region}-transformation-input-bucket`;
-    const inputBucketConstruct = new StandardBucket(
-      this,
-      'TransformationInputBucket',
-      {
-        bucketName: inputBucketName,
-        removalPolicy: RemovalPolicy.RETAIN,
-      }
-    );
-    this.inputBucket = inputBucketConstruct.bucket;
-
     const outputBucketName = `${props.envProps.account}-${props.envProps.region}-transformation-output-bucket`;
-    const outputBucketNameConstruct = new StandardBucket(
-      this,
-      'TransformationOutputBucket',
-      {
-        bucketName: outputBucketName,
-        removalPolicy: RemovalPolicy.RETAIN,
-      }
-    );
+    const outputBucketNameConstruct = new StandardBucket(this, 'TransformationOutputBucket', {
+      bucketName: outputBucketName,
+      removalPolicy: RemovalPolicy.RETAIN,
+      publicReadAccess: true,
+    });
     this.outputBucket = outputBucketNameConstruct.bucket;
 
     // DynamoDB Tables
-    const transformationTableConstruct = new StandardTable(
-      this,
-      'TransformationCounterTableConstruct',
-      {
-        tableName: 'TransformationCounterTable',
-        partitionKey: {
-          name: 'file_type',
-          type: dynamodb.AttributeType.STRING,
-        },
-        removalPolicy: RemovalPolicy.RETAIN,
-      }
-    );
+    const transformationTableConstruct = new StandardTable(this, 'TransformationCounterTableConstruct', {
+      tableName: 'TransformationCounterTable',
+      partitionKey: {
+        name: 'file_type',
+        type: dynamodb.AttributeType.STRING,
+      },
+      removalPolicy: RemovalPolicy.RETAIN,
+    });
     this.transformationCounterTable = transformationTableConstruct.table;
 
-    const userProgressTableConstruct = new StandardTable(
-      this,
-      'UserProgressTableConstruct',
-      {
-        tableName: 'UserProgressTable',
-        partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
-        removalPolicy: RemovalPolicy.RETAIN,
-      }
-    );
+    const userProgressTableConstruct = new StandardTable(this, 'UserProgressTableConstruct', {
+      tableName: 'UserProgressTable',
+      partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      removalPolicy: RemovalPolicy.RETAIN,
+    });
     this.userProgressTable = userProgressTableConstruct.table;
 
-    const learningEntriesTableConstruct = new StandardTable(
-      this,
-      'LearningEntriesTableConstruct',
-      {
-        tableName: 'LearningEntriesTable',
-        partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
-        sortKey: { name: 'entryId', type: dynamodb.AttributeType.STRING },
-        removalPolicy: RemovalPolicy.RETAIN,
-      }
-    );
+    const learningEntriesTableConstruct = new StandardTable(this, 'LearningEntriesTableConstruct', {
+      tableName: 'LearningEntriesTable',
+      partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'entryId', type: dynamodb.AttributeType.STRING },
+      removalPolicy: RemovalPolicy.RETAIN,
+    });
     this.learningEntriesTable = learningEntriesTableConstruct.table;
 
     // CloudFormation Outputs for easy reference
-    new CfnOutput(this, 'InputBucketNameOutput', {
-      value: this.inputBucket.bucketName,
-      description: 'Name of the S3 input bucket',
-    });
     new CfnOutput(this, 'OutputBucketNameOutput', {
       value: this.outputBucket.bucketName,
       description: 'Name of the S3 output bucket',

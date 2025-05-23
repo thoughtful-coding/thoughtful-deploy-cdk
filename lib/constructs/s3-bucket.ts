@@ -12,7 +12,7 @@ export class StandardBucket extends Construct {
   constructor(scope: Construct, id: string, props: StandardBucketProps) {
     super(scope, id);
 
-    this.bucket = new s3.Bucket(this, 'Resource', {
+    this.bucket = new s3.Bucket(this, id, {
       ...props,
       removalPolicy: props.removalPolicy ?? RemovalPolicy.RETAIN,
       versioned: props.versioned ?? false,

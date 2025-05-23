@@ -26,7 +26,7 @@ export class BasicDockerLambda extends Construct {
 
     const region = Stack.of(this).region; // Get region from the stack context
 
-    this.function = new lambda.DockerImageFunction(this, 'FunctionResource', {
+    this.function = new lambda.DockerImageFunction(this, id, {
       functionName: `${Stack.of(this).stackName}-${props.functionNameSuffix}`,
       description: props.description,
       code: lambda.DockerImageCode.fromEcr(props.dockerRepository, {

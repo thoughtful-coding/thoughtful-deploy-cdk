@@ -17,10 +17,7 @@ export class ApiRoute extends Construct {
   constructor(scope: Construct, id: string, props: ApiRouteProps) {
     super(scope, id);
 
-    const lambdaIntegration = new HttpLambdaIntegration(
-      `${id}Integration`,
-      props.handler
-    );
+    const lambdaIntegration = new HttpLambdaIntegration(id, props.handler);
 
     props.httpApi.addRoutes({
       path: props.routePath,

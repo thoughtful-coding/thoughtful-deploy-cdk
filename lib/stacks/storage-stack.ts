@@ -2,9 +2,8 @@ import { RemovalPolicy, Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
-import { EnvironmentProps } from '../utils/config'; // Assuming your config.ts is in lib/utils/
+import { EnvironmentProps } from '../utils/config';
 
-import { StandardBucket } from '../constructs/s3-bucket';
 import { StandardTable } from '../constructs/dynamodb-table';
 
 export interface StorageStackProps extends StackProps {

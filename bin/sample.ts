@@ -34,6 +34,7 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
   userProgressTable: storageStack.userProgressTable,
   learningEntriesTable: storageStack.learningEntriesTable,
   httpApi: storageStack.httpApi,
+  chatbotApiKeySecret: foundationalStack.chatbotApiKeySecret,
 });
 
 const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {

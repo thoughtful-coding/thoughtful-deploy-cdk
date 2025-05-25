@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import { RemovalPolicy, Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import { Construct } from 'constructs';
+import { ManagedSecret } from '../constructs/secret-manager';
 import { EnvironmentProps } from '../utils/config';
 
 export interface FoundationalResourcesStackProps extends StackProps {
@@ -10,6 +11,7 @@ export interface FoundationalResourcesStackProps extends StackProps {
 
 export class FoundationalResourcesStack extends Stack {
   public readonly dockerRepository: ecr.IRepository;
+  public readonly chatbotApiKeySecret: ManagedSecret;
 
   constructor(scope: Construct, id: string, props: FoundationalResourcesStackProps) {
     super(scope, id, props);
@@ -32,6 +34,10 @@ export class FoundationalResourcesStack extends Stack {
       value: this.dockerRepository.repositoryUri,
       description: 'The URI of the ECR Docker repository',
       exportName: 'DockerRepositoryUri', // Optional: makes it easier to import in other stacks if not passing the stack object directly
+    });
+
+    this.chatbotApiKeySecret = new ManagedSecret(this, 'AppChatBotApiKey', {
+      secretName: '/thoughtful-python/chatbot-api-key',
     });
   }
 }

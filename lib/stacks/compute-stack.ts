@@ -6,9 +6,12 @@ import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
+import { ApiRoute } from '../constructs/api-route';
+import { HttpJwtAuthorizer } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import { Construct } from 'constructs';
 import { EnvironmentProps } from '../utils/config';
 import { BasicDockerLambda } from '../constructs/lambda';
+import { GOOGLE_CLIENT_ID } from '../utils/config';
 
 export interface ComputeStackProps extends StackProps {
   readonly envProps: EnvironmentProps;
@@ -74,7 +77,35 @@ export class ComputeStack extends Stack {
     // Grant specific permissions
     props.learningEntriesTable.grantReadWriteData(this.learningEntriesLambda);
 
+    new ApiRoute(this, 'TransformCsvRoute', {
+      httpApi: props.httpApi,
+      routePath: '/transform_csv',
+      methods: [apigwv2.HttpMethod.POST],
+      handler: this.apiTransformationLambda,
+    });
+
+    const googleJwtAuthorizer = new HttpJwtAuthorizer('GoogleJwtAuthorizer', 'https://accounts.google.com', {
+      jwtAudience: [GOOGLE_CLIENT_ID],
+    });
+
+    new ApiRoute(this, 'UserProgressRoute', {
+      httpApi: props.httpApi,
+      routePath: '/progress',
+      methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST, apigwv2.HttpMethod.PUT],
+      handler: this.userProgressLambda,
+      authorizer: googleJwtAuthorizer,
+    });
+
+    new ApiRoute(this, 'LearningEntryRoute', {
+      httpApi: props.httpApi,
+      routePath: '/learning-entries',
+      methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST, apigwv2.HttpMethod.PUT],
+      handler: this.learningEntriesLambda,
+      authorizer: googleJwtAuthorizer,
+    });
+
     // CloudFormation Outputs for Lambda Function ARNs (optional, but can be useful)
+
     new cdk.CfnOutput(this, 'ApiTransformationLambdaArn', {
       value: this.apiTransformationLambda.functionArn,
     });

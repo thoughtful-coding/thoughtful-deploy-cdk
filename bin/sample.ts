@@ -26,16 +26,16 @@ const storageStack = new StorageStack(app, 'SampleStorageStack', {
   envProps: envProps,
 });
 
-// const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
-//   envProps: envProps,
-//   dockerRepository: foundationalStack.dockerRepository,
-//   imageTag: imageTag || 'latest', // Ensure this fallback is acceptable or handle error
-//   outputBucket: storageStack.outputBucket,
-//   transformationCounterTable: storageStack.transformationCounterTable,
-//   userProgressTable: storageStack.userProgressTable,
-//   learningEntriesTable: storageStack.learningEntriesTable,
-//   httpApi: storageStack.httpApi,
-// });
+const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
+  envProps: envProps,
+  dockerRepository: foundationalStack.dockerRepository,
+  imageTag: imageTag || 'latest', // Ensure this fallback is acceptable or handle error
+  outputBucket: storageStack.outputBucket,
+  transformationCounterTable: storageStack.transformationCounterTable,
+  userProgressTable: storageStack.userProgressTable,
+  learningEntriesTable: storageStack.learningEntriesTable,
+  httpApi: storageStack.httpApi,
+});
 
 // const apiGatewayStack = new APIGatewayStack(app, 'SampleApiGatewayStack', {
 //   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,

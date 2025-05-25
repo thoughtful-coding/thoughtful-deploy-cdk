@@ -83,6 +83,8 @@ export class StorageStack extends Stack {
       description: 'Name of the LearningEntryVersions DynamoDB table',
     });
 
+    // API for various apps
+
     this.httpApi = new apigwv2.HttpApi(this, 'StorageStackHttpApi', {
       apiName: 'StorageStackHttpApi',
       description: 'HTTP API for the various apps',

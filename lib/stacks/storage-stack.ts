@@ -1,9 +1,8 @@
-import { RemovalPolicy, Duration, Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
+import { RemovalPolicy, Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
 import { EnvironmentProps } from '../utils/config';
-import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
 
 import { StandardTable } from '../constructs/dynamodb-table';
 
@@ -17,9 +16,6 @@ export class StorageStack extends Stack {
   public readonly transformationCounterTable: dynamodb.ITable;
   public readonly userProgressTable: dynamodb.ITable;
   public readonly learningEntriesTable: dynamodb.ITable;
-
-  public readonly apiEndpoint: string;
-  public readonly httpApi: apigwv2.HttpApi;
 
   constructor(scope: Construct, id: string, props: StorageStackProps) {
     super(scope, id, props);
@@ -81,31 +77,6 @@ export class StorageStack extends Stack {
     new CfnOutput(this, 'LearningEntryVersionsTableNameOutput', {
       value: this.learningEntriesTable.tableName,
       description: 'Name of the LearningEntryVersions DynamoDB table',
-    });
-
-    // API for various apps
-
-    this.httpApi = new apigwv2.HttpApi(this, 'StorageStackHttpApi', {
-      apiName: 'StorageStackHttpApi',
-      description: 'HTTP API for the various apps',
-      corsPreflight: {
-        allowOrigins: ['https://eric-rizzi.github.io', 'http://localhost:5173'],
-        allowMethods: [
-          apigwv2.CorsHttpMethod.GET,
-          apigwv2.CorsHttpMethod.OPTIONS,
-          apigwv2.CorsHttpMethod.POST,
-          apigwv2.CorsHttpMethod.PUT,
-        ],
-        allowHeaders: ['Content-Type', 'Authorization'],
-        maxAge: Duration.days(10),
-      },
-    });
-    this.apiEndpoint = this.httpApi.url!; // The ! asserts that apiEndpoint is not undefined
-
-    new CfnOutput(this, 'StorageStackHttpApiOutputEndpoint', {
-      value: this.apiEndpoint,
-      description: 'Endpoint URL for the Sample App API',
-      exportName: 'StorageStackHttpApiEndpoint',
     });
   }
 }

@@ -4,6 +4,7 @@ import { FoundationalResourcesStack } from '../lib/stacks/foundational-resources
 import { StorageStack } from '../lib/stacks/storage-stack';
 import { ComputeStack } from '../lib/stacks/compute-stack';
 import { OverviewStack } from '../lib/stacks/overview-stack';
+import { ApiRoutesStack } from '../lib/stacks/api-routes-stack';
 
 const app = new cdk.App();
 const envProps = CdkConfig.getEnvironment();
@@ -33,8 +34,15 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
   transformationCounterTable: storageStack.transformationCounterTable,
   userProgressTable: storageStack.userProgressTable,
   learningEntriesTable: storageStack.learningEntriesTable,
-  httpApi: storageStack.httpApi,
   chatbotApiKeySecret: foundationalStack.chatbotApiKeySecret,
+});
+
+const apiRoutesStack = new ApiRoutesStack(app, 'SampleApiRoutesStack', {
+  httpApi: foundationalStack.httpApi,
+  apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
+  userProgressLambda: lambdaComputeStack.userProgressLambda,
+  learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
+  env: { account: envProps.account, region: envProps.region },
 });
 
 const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {

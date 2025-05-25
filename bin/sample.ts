@@ -3,7 +3,6 @@ import { CdkConfig } from '../lib/utils/config';
 import { FoundationalResourcesStack } from '../lib/stacks/foundational-resources-stack';
 import { StorageStack } from '../lib/stacks/storage-stack';
 import { ComputeStack } from '../lib/stacks/compute-stack';
-import { APIGatewayStack } from '../lib/stacks/api-gateway-stack';
 import { OverviewStack } from '../lib/stacks/overview-stack';
 
 const app = new cdk.App();
@@ -37,12 +36,6 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
   httpApi: storageStack.httpApi,
 });
 
-// const apiGatewayStack = new APIGatewayStack(app, 'SampleApiGatewayStack', {
-//   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
-//   userProgressLambda: lambdaComputeStack.userProgressLambda,
-//   learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
-// });
-
-// const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
-//   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
-// });
+const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
+  apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
+});

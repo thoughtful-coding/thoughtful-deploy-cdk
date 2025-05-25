@@ -73,12 +73,13 @@ export class ComputeStack extends Stack {
       cmd: ['aws_src_sample.lambdas.learning_entries_lambda.learning_entries_lambda_handler'],
       environment: {
         LEARNING_ENTRIES_TABLE_NAME: props.learningEntriesTable.tableName,
-        CHATBOT_API_KEY_SECRET_NAME: props.chatbotApiKeySecret.secretArn,
+        CHATBOT_API_KEY_SECRETS_ARN: props.chatbotApiKeySecret.secretArn,
       },
     });
     this.learningEntriesLambda = learningEntriesLambdaConstruct.function;
     // Grant specific permissions
     props.learningEntriesTable.grantReadWriteData(this.learningEntriesLambda);
+    props.chatbotApiKeySecret.grantRead(this.learningEntriesLambda);
 
     // new ApiRoute(this, 'TransformCsvRoute', {
     //   httpApi: props.httpApi,

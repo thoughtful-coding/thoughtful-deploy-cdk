@@ -1,9 +1,7 @@
 // lib/constructs/basic-docker-lambda.ts
-import * as cdk from 'aws-cdk-lib';
 import { Duration, Stack } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
-import * as iam from 'aws-cdk-lib/aws-iam';
 import { Construct } from 'constructs';
 
 export interface BasicDockerLambdaProps {

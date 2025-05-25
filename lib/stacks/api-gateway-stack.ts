@@ -31,7 +31,7 @@ export class APIGatewayStack extends Stack {
           apigwv2.CorsHttpMethod.PUT,
         ],
         allowHeaders: ['Content-Type', 'Authorization'],
-        maxAge: Duration.days(10), //
+        maxAge: Duration.days(10),
       },
     });
     this.apiEndpoint = this.httpApi.url!; // The ! asserts that apiEndpoint is not undefined

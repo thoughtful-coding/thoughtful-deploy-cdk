@@ -14,22 +14,18 @@ export class FoundationalResourcesStack extends Stack {
   constructor(scope: Construct, id: string, props: FoundationalResourcesStackProps) {
     super(scope, id, props);
 
-    this.dockerRepository = new ecr.Repository(
-      this,
-      'SampleAppDockerRepositoryConstruct',
-      {
-        repositoryName: `sample_app_src_rep-${props.envProps.account}-${props.envProps.region}`,
-        removalPolicy: RemovalPolicy.RETAIN,
-        imageScanOnPush: true,
-        lifecycleRules: [
-          {
-            description: 'Keep only the last 10 images',
-            maxImageCount: 3,
-            tagStatus: ecr.TagStatus.ANY,
-          },
-        ]
-      }
-    );
+    this.dockerRepository = new ecr.Repository(this, 'SampleAppDockerRepositoryConstruct', {
+      repositoryName: `sample_app_src_rep-${props.envProps.account}-${props.envProps.region}`,
+      removalPolicy: RemovalPolicy.RETAIN,
+      imageScanOnPush: true,
+      lifecycleRules: [
+        {
+          description: 'Keep only the last 10 images',
+          maxImageCount: 2,
+          tagStatus: ecr.TagStatus.ANY,
+        },
+      ],
+    });
 
     // Output the repository URI. This can be useful for CI/CD pipelines or for other stacks to reference.
     new CfnOutput(this, 'DockerRepositoryUriOutput', {

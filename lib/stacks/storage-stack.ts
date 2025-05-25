@@ -1,8 +1,9 @@
-import { RemovalPolicy, Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
+import { RemovalPolicy, Duration, Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
 import { EnvironmentProps } from '../utils/config';
+import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
 
 import { StandardTable } from '../constructs/dynamodb-table';
 
@@ -16,6 +17,9 @@ export class StorageStack extends Stack {
   public readonly transformationCounterTable: dynamodb.ITable;
   public readonly userProgressTable: dynamodb.ITable;
   public readonly learningEntriesTable: dynamodb.ITable;
+
+  public readonly apiEndpoint: string;
+  private readonly httpApi: apigwv2.HttpApi;
 
   constructor(scope: Construct, id: string, props: StorageStackProps) {
     super(scope, id, props);
@@ -66,5 +70,22 @@ export class StorageStack extends Stack {
       value: this.transformationCounterTable.tableName,
       description: 'Name of the TransformationCounter DynamoDB table',
     });
+
+    this.httpApi = new apigwv2.HttpApi(this, 'SampleAppHttpApi', {
+      apiName: 'SampleAppAPI',
+      description: 'HTTP API for the Sample Application',
+      corsPreflight: {
+        allowOrigins: ['https://eric-rizzi.github.io', 'http://localhost:5173'],
+        allowMethods: [
+          apigwv2.CorsHttpMethod.GET,
+          apigwv2.CorsHttpMethod.OPTIONS,
+          apigwv2.CorsHttpMethod.POST,
+          apigwv2.CorsHttpMethod.PUT,
+        ],
+        allowHeaders: ['Content-Type', 'Authorization'],
+        maxAge: Duration.days(10), //
+      },
+    });
+    this.apiEndpoint = this.httpApi.url!; // The ! asserts that apiEndpoint is not undefined
   }
 }

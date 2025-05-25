@@ -53,8 +53,8 @@ export class StorageStack extends Stack {
     });
     this.userProgressTable = userProgressTableConstruct.table;
 
-    const learningEntriesTable = new dynamodb.Table(this, 'LearningEntryVersionsTable', {
-      tableName: 'LearningEntryVersionsTable',
+    const learningEntriesTable = new dynamodb.Table(this, 'LearningEntriesTable', {
+      tableName: 'LearningEntriesTable',
       partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'versionId', type: dynamodb.AttributeType.STRING }, // SK: lessonId#sectionId#createdAtISO
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -99,5 +99,11 @@ export class StorageStack extends Stack {
       },
     });
     this.apiEndpoint = this.httpApi.url!; // The ! asserts that apiEndpoint is not undefined
+
+    new CfnOutput(this, 'StorageStackHttpApiOutputEndpoint', {
+      value: this.apiEndpoint,
+      description: 'Endpoint URL for the Sample App API',
+      exportName: 'StorageStackHttpApiEndpoint',
+    });
   }
 }

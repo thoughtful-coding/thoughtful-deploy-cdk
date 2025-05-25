@@ -19,7 +19,7 @@ export class StorageStack extends Stack {
   public readonly learningEntriesTable: dynamodb.ITable;
 
   public readonly apiEndpoint: string;
-  private readonly httpApi: apigwv2.HttpApi;
+  public readonly httpApi: apigwv2.HttpApi;
 
   constructor(scope: Construct, id: string, props: StorageStackProps) {
     super(scope, id, props);
@@ -53,15 +53,23 @@ export class StorageStack extends Stack {
     });
     this.userProgressTable = userProgressTableConstruct.table;
 
-    const learningEntriesTableConstruct = new StandardTable(this, 'LearningEntriesTableConstruct', {
-      tableName: 'LearningEntriesTable',
+    const learningEntriesTable = new dynamodb.Table(this, 'LearningEntryVersionsTable', {
+      tableName: 'LearningEntryVersionsTable',
       partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'entryId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'versionId', type: dynamodb.AttributeType.STRING }, // SK: lessonId#sectionId#createdAtISO
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.RETAIN,
     });
-    this.learningEntriesTable = learningEntriesTableConstruct.table;
+    learningEntriesTable.addGlobalSecondaryIndex({
+      indexName: 'UserFinalLearningEntriesIndex',
+      partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'finalEntryCreatedAt', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+    this.learningEntriesTable = learningEntriesTable;
 
-    // CloudFormation Outputs for easy reference
+    // Output the table names (optional but useful)
+
     new CfnOutput(this, 'OutputBucketNameOutput', {
       value: this.outputBucket.bucketName,
       description: 'Name of the S3 output bucket',
@@ -69,6 +77,10 @@ export class StorageStack extends Stack {
     new CfnOutput(this, 'TransformationCounterTableNameOutput', {
       value: this.transformationCounterTable.tableName,
       description: 'Name of the TransformationCounter DynamoDB table',
+    });
+    new CfnOutput(this, 'LearningEntryVersionsTableNameOutput', {
+      value: this.learningEntriesTable.tableName,
+      description: 'Name of the LearningEntryVersions DynamoDB table',
     });
 
     this.httpApi = new apigwv2.HttpApi(this, 'StorageStackHttpApi', {

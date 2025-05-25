@@ -11,22 +11,16 @@ const envProps = CdkConfig.getEnvironment();
 
 const imageTag = app.node.tryGetContext('imageTag') as string | undefined;
 if (!imageTag && process.env.CI) {
-  throw new Error(
-    "Context variable 'imageTag' must be passed to the CDK process in CI."
-  );
+  throw new Error("Context variable 'imageTag' must be passed to the CDK process in CI.");
 } else if (!imageTag) {
   console.warn(
     "Warning: Context variable 'imageTag' was not provided. Using 'latest' as fallback for Lambda image tag."
   );
 }
 
-const foundationalStack = new FoundationalResourcesStack(
-  app,
-  'SampleFoundationalResourcesStack',
-  {
-    envProps: envProps,
-  }
-);
+const foundationalStack = new FoundationalResourcesStack(app, 'SampleFoundationalResourcesStack', {
+  envProps: envProps,
+});
 
 const storageStack = new StorageStack(app, 'SampleStorageStack', {
   envProps: envProps,
@@ -40,6 +34,7 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
   transformationCounterTable: storageStack.transformationCounterTable,
   userProgressTable: storageStack.userProgressTable,
   learningEntriesTable: storageStack.learningEntriesTable,
+  httpApi: storageStack.httpApi,
 });
 
 const apiGatewayStack = new APIGatewayStack(app, 'SampleApiGatewayStack', {

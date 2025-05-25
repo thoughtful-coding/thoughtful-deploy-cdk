@@ -71,9 +71,9 @@ export class StorageStack extends Stack {
       description: 'Name of the TransformationCounter DynamoDB table',
     });
 
-    this.httpApi = new apigwv2.HttpApi(this, 'SampleAppHttpApi', {
-      apiName: 'SampleAppAPI',
-      description: 'HTTP API for the Sample Application',
+    this.httpApi = new apigwv2.HttpApi(this, 'StorageStackHttpApi', {
+      apiName: 'StorageStackHttpApi',
+      description: 'HTTP API for the various apps',
       corsPreflight: {
         allowOrigins: ['https://eric-rizzi.github.io', 'http://localhost:5173'],
         allowMethods: [
@@ -83,7 +83,7 @@ export class StorageStack extends Stack {
           apigwv2.CorsHttpMethod.PUT,
         ],
         allowHeaders: ['Content-Type', 'Authorization'],
-        maxAge: Duration.days(10), //
+        maxAge: Duration.days(10),
       },
     });
     this.apiEndpoint = this.httpApi.url!; // The ! asserts that apiEndpoint is not undefined

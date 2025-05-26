@@ -47,13 +47,5 @@ export class ApiRoutesStack extends Stack {
       handler: props.learningEntriesLambda,
       authorizer: googleJwtAuthorizer, //
     });
-
-    // CloudFormation Output for the API endpoint from this stack
-    new CfnOutput(this, 'ApiEndpointOutput', {
-      //
-      value: props.httpApi.url!, // httpApi is passed from StorageStack
-      description: 'Endpoint URL for the Sample App API', //
-      exportName: 'SampleAppApiEndpoint', // Or use the original 'StorageStackHttpApiEndpoint' if preferred
-    });
   }
 }

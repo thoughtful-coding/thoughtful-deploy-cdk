@@ -67,7 +67,7 @@ export class APIGatewayStack extends Stack {
 
     new ApiRoute(this, 'ReflectionsFeedbackRoute', {
       httpApi: this.httpApi,
-      routePath: '/lessons/{lessonId}/sections/{sectionId}/reflections',
+      routePath: '/reflections/{lessonId}/sections/{sectionId}',
       methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST],
       handler: props.learningEntriesLambda,
       authorizer: googleJwtAuthorizer,

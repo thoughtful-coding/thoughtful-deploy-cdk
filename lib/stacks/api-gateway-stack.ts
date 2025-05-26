@@ -65,6 +65,14 @@ export class APIGatewayStack extends Stack {
       authorizer: googleJwtAuthorizer,
     });
 
+    new ApiRoute(this, 'ReflectionsFeedbackRoute', {
+      httpApi: this.httpApi,
+      routePath: '/lessons/{lessonId}/sections/{sectionId}/reflections',
+      methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST],
+      handler: props.learningEntriesLambda,
+      authorizer: googleJwtAuthorizer,
+    });
+
     // CloudFormation Output for the API endpoint
     new CfnOutput(this, 'ApiEndpointOutput', {
       value: this.apiEndpoint,

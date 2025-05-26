@@ -13,7 +13,6 @@ export class FoundationalResourcesStack extends Stack {
   public readonly dockerRepository: ecr.IRepository;
   public readonly chatbotApiKeySecret: ManagedSecret;
   public readonly httpApi: apigwv2.HttpApi;
-  public readonly apiEndpoint: string;
 
   constructor(scope: Construct, id: string, props: FoundationalResourcesStackProps) {
     super(scope, id, props);
@@ -61,6 +60,5 @@ export class FoundationalResourcesStack extends Stack {
         maxAge: Duration.days(10),
       },
     });
-    this.apiEndpoint = this.httpApi.url!; // The ! asserts that apiEndpoint is not undefined
   }
 }

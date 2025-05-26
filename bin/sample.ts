@@ -38,13 +38,14 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
 });
 
 const apiRoutesStack = new ApiRoutesStack(app, 'SampleApiRoutesStack', {
-  httpApi: foundationalStack.httpApi,
+  httpApiId: foundationalStack.httpApiId,
+  region: envProps.region,
   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
   userProgressLambda: lambdaComputeStack.userProgressLambda,
   learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
   env: { account: envProps.account, region: envProps.region },
 });
 
-const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
-  apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
-});
+// const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
+//   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
+// });

@@ -12,7 +12,8 @@ export interface FoundationalResourcesStackProps extends StackProps {
 export class FoundationalResourcesStack extends Stack {
   public readonly dockerRepository: ecr.IRepository;
   public readonly chatbotApiKeySecret: ManagedSecret;
-  public readonly httpApi: apigwv2.HttpApi;
+  private readonly httpApi: apigwv2.HttpApi;
+  public readonly httpApiId: string;
 
   constructor(scope: Construct, id: string, props: FoundationalResourcesStackProps) {
     super(scope, id, props);
@@ -59,6 +60,13 @@ export class FoundationalResourcesStack extends Stack {
         allowHeaders: ['Content-Type', 'Authorization'],
         maxAge: Duration.days(10),
       },
+    });
+    this.httpApiId = this.httpApi.httpApiId;
+
+    new CfnOutput(this, 'StorageStackHttpApiOutput', {
+      value: this.httpApiId,
+      description: 'The ID of the HTTP API',
+      exportName: 'StorageStackHttpApiIdExport', // Ensure this export name is unique
     });
   }
 }

@@ -60,7 +60,7 @@ export class APIGatewayStack extends Stack {
     new ApiRoute(this, 'LearningEntryRoute', {
       httpApi: this.httpApi,
       routePath: '/learning-entries',
-      methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST, apigwv2.HttpMethod.PUT],
+      methods: [apigwv2.HttpMethod.GET],
       handler: props.learningEntriesLambda,
       authorizer: googleJwtAuthorizer,
     });

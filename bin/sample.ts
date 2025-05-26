@@ -37,13 +37,13 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
   chatbotApiKeySecret: foundationalStack.chatbotApiKeySecret,
 });
 
-const apiRoutesStack = new ApiRoutesStack(app, 'SampleApiRoutesStack', {
-  httpApi: foundationalStack.httpApi,
-  apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
-  userProgressLambda: lambdaComputeStack.userProgressLambda,
-  learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
-  env: { account: envProps.account, region: envProps.region },
-});
+// const apiRoutesStack = new ApiRoutesStack(app, 'SampleApiRoutesStack', {
+//   httpApi: foundationalStack.httpApi,
+//   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
+//   userProgressLambda: lambdaComputeStack.userProgressLambda,
+//   learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
+//   env: { account: envProps.account, region: envProps.region },
+// });
 
 const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,

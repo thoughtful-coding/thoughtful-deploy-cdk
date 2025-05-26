@@ -34,6 +34,7 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
   transformationCounterTable: storageStack.transformationCounterTable,
   userProgressTable: storageStack.userProgressTable,
   learningEntriesTable: storageStack.learningEntriesTable,
+  throttlingStoreTable: storageStack.throttlingStoreTable,
   chatbotApiKeySecret: foundationalStack.chatbotApiKeySecret,
 });
 

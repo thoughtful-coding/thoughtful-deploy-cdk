@@ -17,6 +17,7 @@ export interface ComputeStackProps extends StackProps {
   readonly transformationCounterTable: dynamodb.ITable;
   readonly userProgressTable: dynamodb.ITable;
   readonly learningEntriesTable: dynamodb.ITable;
+  readonly throttlingStoreTable: dynamodb.ITable;
   readonly chatbotApiKeySecret: ManagedSecret;
 }
 
@@ -68,12 +69,14 @@ export class ComputeStack extends Stack {
       environment: {
         LEARNING_ENTRIES_TABLE_NAME: props.learningEntriesTable.tableName,
         CHATBOT_API_KEY_SECRETS_ARN: props.chatbotApiKeySecret.secretArn,
+        THROTTLING_TABLE_NAME: props.throttlingStoreTable.tableName,
       },
     });
     this.learningEntriesLambda = learningEntriesLambdaConstruct.function;
     // Grant specific permissions
     props.learningEntriesTable.grantReadWriteData(this.learningEntriesLambda);
     props.chatbotApiKeySecret.grantRead(this.learningEntriesLambda);
+    props.throttlingStoreTable.grantReadWriteData(this.learningEntriesLambda);
 
     // CloudFormation Outputs for Lambda Function ARNs (optional, but can be useful)
 

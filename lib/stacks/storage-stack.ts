@@ -16,6 +16,7 @@ export class StorageStack extends Stack {
   public readonly transformationCounterTable: dynamodb.ITable;
   public readonly userProgressTable: dynamodb.ITable;
   public readonly learningEntriesTable: dynamodb.ITable;
+  public readonly throttlingStoreTable: dynamodb.ITable;
 
   constructor(scope: Construct, id: string, props: StorageStackProps) {
     super(scope, id, props);
@@ -64,6 +65,14 @@ export class StorageStack extends Stack {
     });
     this.learningEntriesTable = learningEntriesTable;
 
+    const throttlingStoreTableConstruct = new StandardTable(this, 'ThrottlingStoreTable', {
+      tableName: 'ThrottlingStore',
+      partitionKey: { name: 'entityActionId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'periodType#periodIdentifier', type: dynamodb.AttributeType.STRING },
+      timeToLiveAttribute: 'ttl',
+    });
+    this.throttlingStoreTable = throttlingStoreTableConstruct.table;
+
     // Output the table names (optional but useful)
 
     new CfnOutput(this, 'OutputBucketNameOutput', {
@@ -77,6 +86,11 @@ export class StorageStack extends Stack {
     new CfnOutput(this, 'LearningEntryVersionsTableNameOutput', {
       value: this.learningEntriesTable.tableName,
       description: 'Name of the LearningEntryVersions DynamoDB table',
+    });
+
+    new CfnOutput(this, 'ThrottlingStoreTableNameOutput', {
+      value: this.throttlingStoreTable.tableName,
+      description: 'Name of the ThrottlingStore DynamoDB table',
     });
   }
 }

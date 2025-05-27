@@ -74,13 +74,13 @@ export class APIGatewayStack extends Stack {
       authorizer: googleJwtAuthorizer,
     });
 
-    new ApiRoute(this, 'PRIMMFeedbackRoute', {
-      httpApi: this.httpApi,
-      routePath: '/primm-feedback',
-      methods: [apigwv2.HttpMethod.POST],
-      handler: props.primmFeedbackLambda,
-      authorizer: googleJwtAuthorizer,
-    });
+    // new ApiRoute(this, 'PRIMMFeedbackRoute', {
+    //   httpApi: this.httpApi,
+    //   routePath: '/primm-feedback',
+    //   methods: [apigwv2.HttpMethod.POST],
+    //   handler: props.primmFeedbackLambda,
+    //   authorizer: googleJwtAuthorizer,
+    // });
 
     // CloudFormation Output for the API endpoint
     new CfnOutput(this, 'ApiEndpointOutput', {

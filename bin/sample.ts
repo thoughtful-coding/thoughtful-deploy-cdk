@@ -42,9 +42,10 @@ const apiRoutesStack = new APIGatewayStack(app, 'SampleApiRoutesStack', {
   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
   userProgressLambda: lambdaComputeStack.userProgressLambda,
   learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
+  primmFeedbackLambda: lambdaComputeStack.primmFeedbackLambda,
   env: { account: envProps.account, region: envProps.region },
 });
 
-// const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
-//   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
-// });
+const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
+  apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
+});

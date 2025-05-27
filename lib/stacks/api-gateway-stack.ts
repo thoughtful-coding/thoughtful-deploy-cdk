@@ -10,6 +10,7 @@ export interface APIGatewayStackProps extends StackProps {
   readonly apiTransformationLambda: lambda.IFunction;
   readonly userProgressLambda: lambda.IFunction;
   readonly learningEntriesLambda: lambda.IFunction;
+  readonly primmFeedbackLambda: lambda.IFunction;
 }
 
 export class APIGatewayStack extends Stack {
@@ -70,6 +71,14 @@ export class APIGatewayStack extends Stack {
       routePath: '/reflections/{lessonId}/sections/{sectionId}',
       methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST],
       handler: props.learningEntriesLambda,
+      authorizer: googleJwtAuthorizer,
+    });
+
+    new ApiRoute(this, 'PRIMMFeedbackRoute', {
+      httpApi: this.httpApi,
+      routePath: '/primm-feedback',
+      methods: [apigwv2.HttpMethod.POST],
+      handler: props.primmFeedbackLambda,
       authorizer: googleJwtAuthorizer,
     });
 

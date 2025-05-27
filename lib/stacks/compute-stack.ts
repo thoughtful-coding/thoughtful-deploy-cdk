@@ -25,6 +25,7 @@ export class ComputeStack extends Stack {
   public readonly apiTransformationLambda: lambda.IFunction;
   public readonly userProgressLambda: lambda.IFunction;
   public readonly learningEntriesLambda: lambda.IFunction;
+  public readonly primmFeedbackLambda: lambda.IFunction;
 
   constructor(scope: Construct, id: string, props: ComputeStackProps) {
     super(scope, id, props);
@@ -78,6 +79,22 @@ export class ComputeStack extends Stack {
     props.chatbotApiKeySecret.grantRead(this.learningEntriesLambda);
     props.throttlingStoreTable.grantReadWriteData(this.learningEntriesLambda);
 
+    const primmFeedbackLambdaConstruct = new BasicDockerLambda(this, 'PRIMMFeedbackLambda', {
+      functionNameSuffix: 'PRIMMFeedback',
+      description: 'Handles API requests that POST feedback for PRIMM exercises',
+      dockerRepository: props.dockerRepository,
+      imageTag: props.imageTag,
+      cmd: ['aws_src_sample.lambdas.primm_feedback_lambda.primm_feedback_lambda_handler'],
+      environment: {
+        CHATBOT_API_KEY_SECRETS_ARN: props.chatbotApiKeySecret.secretArn,
+        THROTTLING_TABLE_NAME: props.throttlingStoreTable.tableName,
+      },
+    });
+    this.primmFeedbackLambda = primmFeedbackLambdaConstruct.function;
+    // Grant specific permissions
+    props.chatbotApiKeySecret.grantRead(this.primmFeedbackLambda);
+    props.throttlingStoreTable.grantReadWriteData(this.primmFeedbackLambda);
+
     // CloudFormation Outputs for Lambda Function ARNs (optional, but can be useful)
 
     new cdk.CfnOutput(this, 'ApiTransformationLambdaArn', {
@@ -90,6 +107,10 @@ export class ComputeStack extends Stack {
 
     new cdk.CfnOutput(this, 'LearningEntriesLambdaArn', {
       value: this.learningEntriesLambda.functionArn,
+    });
+
+    new cdk.CfnOutput(this, 'PRIMMFeedbackLambdaArn', {
+      value: this.primmFeedbackLambda.functionArn,
     });
   }
 }

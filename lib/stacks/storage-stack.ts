@@ -16,7 +16,9 @@ export class StorageStack extends Stack {
   public readonly transformationCounterTable: dynamodb.ITable;
   public readonly userProgressTable: dynamodb.ITable;
   public readonly learningEntriesTable: dynamodb.ITable;
+  public readonly primmSubmissionsTable: dynamodb.ITable;
   public readonly throttlingStoreTable: dynamodb.ITable;
+  public readonly userPermissionsTable: dynamodb.ITable;
 
   constructor(scope: Construct, id: string, props: StorageStackProps) {
     super(scope, id, props);
@@ -65,6 +67,14 @@ export class StorageStack extends Stack {
     });
     this.learningEntriesTable = learningEntriesTable;
 
+    const primmSubmissionsTableConstruct = new StandardTable(this, 'UserPrimmSubmissionsTable', {
+      tableName: 'UserPrimmSubmissions',
+      partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      // SK: lessonId#sectionId#primmExampleId#timestamp
+      sortKey: { name: 'submissionCompositeKey', type: dynamodb.AttributeType.STRING },
+    });
+    this.primmSubmissionsTable = primmSubmissionsTableConstruct.table;
+
     const throttlingStoreTableConstruct = new StandardTable(this, 'ThrottlingStoreTable', {
       tableName: 'ThrottlingStore',
       partitionKey: { name: 'entityActionId', type: dynamodb.AttributeType.STRING },
@@ -73,24 +83,55 @@ export class StorageStack extends Stack {
     });
     this.throttlingStoreTable = throttlingStoreTableConstruct.table;
 
+    const userPermissionsTable = new dynamodb.Table(this, 'UserPermissionsTable', {
+      tableName: 'UserPermissions',
+      partitionKey: { name: 'granterUserId', type: dynamodb.AttributeType.STRING },
+      // SK value will be 'permissionType#granteeUserId'
+      sortKey: { name: 'granteePermissionTypeComposite', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.RETAIN,
+      encryption: dynamodb.TableEncryption.AWS_MANAGED,
+    });
+
+    // Add GSI for querying by granteeUserId (e.g., teacherId)
+    userPermissionsTable.addGlobalSecondaryIndex({
+      indexName: 'GranteePermissionsIndex',
+      partitionKey: { name: 'granteeUserId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'granterPermissionTypeComposite', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+    this.userPermissionsTable = userPermissionsTable;
+
     // Output the table names (optional but useful)
 
     new CfnOutput(this, 'OutputBucketNameOutput', {
       value: this.outputBucket.bucketName,
       description: 'Name of the S3 output bucket',
     });
+
     new CfnOutput(this, 'TransformationCounterTableNameOutput', {
       value: this.transformationCounterTable.tableName,
       description: 'Name of the TransformationCounter DynamoDB table',
     });
+
     new CfnOutput(this, 'LearningEntryVersionsTableNameOutput', {
       value: this.learningEntriesTable.tableName,
       description: 'Name of the LearningEntryVersions DynamoDB table',
     });
 
+    new CfnOutput(this, 'PrimmSubmissionsTableNameOutput', {
+      value: this.primmSubmissionsTable.tableName,
+      description: 'Name of the PrimmSubmissions DynamoDB table',
+    });
+
     new CfnOutput(this, 'ThrottlingStoreTableNameOutput', {
       value: this.throttlingStoreTable.tableName,
       description: 'Name of the ThrottlingStore DynamoDB table',
+    });
+
+    new CfnOutput(this, 'UserPermissionsTableNameOutput', {
+      value: this.userPermissionsTable.tableName,
+      description: 'Named of the UserPermissions DynamoDB table',
     });
   }
 }

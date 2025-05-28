@@ -17,7 +17,9 @@ export interface ComputeStackProps extends StackProps {
   readonly transformationCounterTable: dynamodb.ITable;
   readonly userProgressTable: dynamodb.ITable;
   readonly learningEntriesTable: dynamodb.ITable;
+  readonly primmSubmissionsTable: dynamodb.ITable;
   readonly throttlingStoreTable: dynamodb.ITable;
+  readonly userPermissionsTable: dynamodb.ITable;
   readonly chatbotApiKeySecret: ManagedSecret;
 }
 
@@ -93,6 +95,7 @@ export class ComputeStack extends Stack {
     this.primmFeedbackLambda = primmFeedbackLambdaConstruct.function;
     // Grant specific permissions
     props.chatbotApiKeySecret.grantRead(this.primmFeedbackLambda);
+    props.primmSubmissionsTable.grantWriteData(this.primmFeedbackLambda);
     props.throttlingStoreTable.grantReadWriteData(this.primmFeedbackLambda);
 
     // CloudFormation Outputs for Lambda Function ARNs (optional, but can be useful)

@@ -28,6 +28,7 @@ export class ComputeStack extends Stack {
   public readonly userProgressLambda: lambda.IFunction;
   public readonly learningEntriesLambda: lambda.IFunction;
   public readonly primmFeedbackLambda: lambda.IFunction;
+  public readonly instructorPortalLambda: lambda.IFunction;
 
   constructor(scope: Construct, id: string, props: ComputeStackProps) {
     super(scope, id, props);
@@ -70,9 +71,9 @@ export class ComputeStack extends Stack {
       imageTag: props.imageTag,
       cmd: ['aws_src_sample.lambdas.learning_entries_lambda.learning_entries_lambda_handler'],
       environment: {
-        LEARNING_ENTRIES_TABLE_NAME: props.learningEntriesTable.tableName,
         CHATBOT_API_KEY_SECRETS_ARN: props.chatbotApiKeySecret.secretArn,
         THROTTLING_TABLE_NAME: props.throttlingStoreTable.tableName,
+        LEARNING_ENTRIES_TABLE_NAME: props.learningEntriesTable.tableName,
       },
     });
     this.learningEntriesLambda = learningEntriesLambdaConstruct.function;
@@ -90,13 +91,32 @@ export class ComputeStack extends Stack {
       environment: {
         CHATBOT_API_KEY_SECRETS_ARN: props.chatbotApiKeySecret.secretArn,
         THROTTLING_TABLE_NAME: props.throttlingStoreTable.tableName,
+        PRIMM_SUBMISSIONS_TABLE_NAME: props.primmSubmissionsTable.tableName,
       },
     });
     this.primmFeedbackLambda = primmFeedbackLambdaConstruct.function;
     // Grant specific permissions
     props.chatbotApiKeySecret.grantRead(this.primmFeedbackLambda);
-    props.primmSubmissionsTable.grantWriteData(this.primmFeedbackLambda);
     props.throttlingStoreTable.grantReadWriteData(this.primmFeedbackLambda);
+    props.primmSubmissionsTable.grantWriteData(this.primmFeedbackLambda);
+
+    const instructorPortalLambdaConstruct = new BasicDockerLambda(this, 'InstructorPortalLambda', {
+      functionNameSuffix: 'InstructorPortal',
+      description: 'Handles API requests for the instructor portal',
+      dockerRepository: props.dockerRepository,
+      imageTag: props.imageTag,
+      cmd: ['aws_src_sample.lambdas.instructor_portal_lambda.instructor_portal_lambda_handler'],
+      environment: {
+        USER_PROGRESS_TABLE_NAME: props.userProgressTable.tableName,
+        LEARNING_ENTRIES_TABLE_NAME: props.learningEntriesTable.tableName,
+        PRIMM_SUBMISSIONS_TABLE_NAME: props.primmSubmissionsTable.tableName,
+      },
+    });
+    this.instructorPortalLambda = instructorPortalLambdaConstruct.function;
+    // Grant specific permissions
+    props.userProgressTable.grantReadData(this.instructorPortalLambda);
+    props.learningEntriesTable.grantReadWriteData(this.instructorPortalLambda);
+    props.primmSubmissionsTable.grantWriteData(this.instructorPortalLambda);
 
     // CloudFormation Outputs for Lambda Function ARNs (optional, but can be useful)
 
@@ -114,6 +134,10 @@ export class ComputeStack extends Stack {
 
     new cdk.CfnOutput(this, 'PRIMMFeedbackLambdaArn', {
       value: this.primmFeedbackLambda.functionArn,
+    });
+
+    new cdk.CfnOutput(this, 'InstructorPortalLambdaArn', {
+      value: this.instructorPortalLambda.functionArn,
     });
   }
 }

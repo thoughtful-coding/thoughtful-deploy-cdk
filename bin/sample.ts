@@ -45,6 +45,7 @@ const apiRoutesStack = new APIGatewayStack(app, 'SampleApiRoutesStack', {
   userProgressLambda: lambdaComputeStack.userProgressLambda,
   learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
   primmFeedbackLambda: lambdaComputeStack.primmFeedbackLambda,
+  instructorPortalLambda: lambdaComputeStack.instructorPortalLambda,
   env: { account: envProps.account, region: envProps.region },
 });
 

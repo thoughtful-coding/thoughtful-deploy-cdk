@@ -11,6 +11,7 @@ export interface APIGatewayStackProps extends StackProps {
   readonly userProgressLambda: lambda.IFunction;
   readonly learningEntriesLambda: lambda.IFunction;
   readonly primmFeedbackLambda: lambda.IFunction;
+  readonly instructorPortalLambda: lambda.IFunction;
 }
 
 export class APIGatewayStack extends Stack {
@@ -79,6 +80,14 @@ export class APIGatewayStack extends Stack {
       routePath: '/primm-feedback',
       methods: [apigwv2.HttpMethod.POST],
       handler: props.primmFeedbackLambda,
+      authorizer: googleJwtAuthorizer,
+    });
+
+    new ApiRoute(this, 'InstructorStudentsRoute', {
+      httpApi: this.httpApi,
+      routePath: '/instructor/students',
+      methods: [apigwv2.HttpMethod.GET],
+      handler: props.instructorPortalLambda,
       authorizer: googleJwtAuthorizer,
     });
 

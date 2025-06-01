@@ -91,6 +91,14 @@ export class APIGatewayStack extends Stack {
       authorizer: googleJwtAuthorizer,
     });
 
+    new ApiRoute(this, 'InstructorStudentUnitProgressRoute', {
+      httpApi: this.httpApi,
+      routePath: '/instructor/students/{studentId}/units/{unitId}/progress',
+      methods: [apigwv2.HttpMethod.GET],
+      handler: props.instructorPortalLambda,
+      authorizer: googleJwtAuthorizer,
+    });
+
     // CloudFormation Output for the API endpoint
     new CfnOutput(this, 'ApiEndpointOutput', {
       value: this.apiEndpoint,

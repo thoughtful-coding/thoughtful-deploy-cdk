@@ -99,7 +99,7 @@ export class APIGatewayStack extends Stack {
       authorizer: googleJwtAuthorizer,
     });
 
-    new ApiRoute(this, 'InstructorStudentUnitProgressRoute', {
+    new ApiRoute(this, 'InstructorUnitProgressRoute', {
       httpApi: this.httpApi,
       routePath: '/instructor/units/{unitId}/class-progress',
       methods: [apigwv2.HttpMethod.GET],

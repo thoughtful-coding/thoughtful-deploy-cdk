@@ -32,7 +32,7 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
   imageTag: imageTag || 'latest', // Ensure this fallback is acceptable or handle error
   outputBucket: storageStack.outputBucket,
   transformationCounterTable: storageStack.transformationCounterTable,
-  userProgressTable: storageStack.userProgressTable,
+  progressTable: storageStack.progressTable,
   learningEntriesTable: storageStack.learningEntriesTable,
   primmSubmissionsTable: storageStack.primmSubmissionsTable,
   throttlingStoreTable: storageStack.throttlingStoreTable,

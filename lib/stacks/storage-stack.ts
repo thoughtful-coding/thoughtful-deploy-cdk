@@ -14,7 +14,7 @@ export class StorageStack extends Stack {
   // Public properties to expose created resources to other stacks
   public readonly outputBucket: s3.IBucket;
   public readonly transformationCounterTable: dynamodb.ITable;
-  public readonly userProgressTable: dynamodb.ITable;
+  public readonly progressTable: dynamodb.ITable;
   public readonly learningEntriesTable: dynamodb.ITable;
   public readonly primmSubmissionsTable: dynamodb.ITable;
   public readonly throttlingStoreTable: dynamodb.ITable;
@@ -45,12 +45,13 @@ export class StorageStack extends Stack {
     });
     this.transformationCounterTable = transformationTableConstruct.table;
 
-    const userProgressTableConstruct = new StandardTable(this, 'UserProgressTableConstruct', {
-      tableName: 'UserProgressTable',
+    const progressTableConstruct = new StandardTable(this, 'ProgressTableConstruct', {
+      tableName: 'ProgressTable',
       partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'unitId', type: dynamodb.AttributeType.STRING },
       removalPolicy: RemovalPolicy.RETAIN,
     });
-    this.userProgressTable = userProgressTableConstruct.table;
+    this.progressTable = progressTableConstruct.table;
 
     const learningEntriesTable = new dynamodb.Table(this, 'LearningEntriesTable', {
       tableName: 'LearningEntriesTable',
@@ -112,6 +113,11 @@ export class StorageStack extends Stack {
     new CfnOutput(this, 'TransformationCounterTableNameOutput', {
       value: this.transformationCounterTable.tableName,
       description: 'Name of the TransformationCounter DynamoDB table',
+    });
+
+    new CfnOutput(this, 'ProgressTableNameOutput', {
+      value: this.progressTable.tableName,
+      description: 'Name of the Progress DynamoDB table',
     });
 
     new CfnOutput(this, 'LearningEntryVersionsTableNameOutput', {

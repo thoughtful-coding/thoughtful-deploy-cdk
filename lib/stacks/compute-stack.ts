@@ -58,7 +58,6 @@ export class ComputeStack extends Stack {
       imageTag: props.imageTag,
       cmd: ['aws_src_sample.lambdas.user_progress_lambda.user_progress_lambda_handler'],
       environment: {
-        USER_PROGRESS_TABLE_NAME: props.userProgressTable.tableName,
         PROGRESS_TABLE_NAME: props.progressTable.tableName,
       },
     });
@@ -111,7 +110,6 @@ export class ComputeStack extends Stack {
       cmd: ['aws_src_sample.lambdas.instructor_portal_lambda.instructor_portal_lambda_handler'],
       environment: {
         USER_PERMISSIONS_TABLE_NAME: props.userPermissionsTable.tableName,
-        USER_PROGRESS_TABLE_NAME: props.userProgressTable.tableName,
         PROGRESS_TABLE_NAME: props.progressTable.tableName,
         LEARNING_ENTRIES_TABLE_NAME: props.learningEntriesTable.tableName,
         PRIMM_SUBMISSIONS_TABLE_NAME: props.primmSubmissionsTable.tableName,

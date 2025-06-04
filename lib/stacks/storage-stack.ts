@@ -14,6 +14,7 @@ export class StorageStack extends Stack {
   // Public properties to expose created resources to other stacks
   public readonly outputBucket: s3.IBucket;
   public readonly transformationCounterTable: dynamodb.ITable;
+  public readonly userProgressTable: dynamodb.ITable;
   public readonly progressTable: dynamodb.ITable;
   public readonly learningEntriesTable: dynamodb.ITable;
   public readonly primmSubmissionsTable: dynamodb.ITable;
@@ -44,6 +45,13 @@ export class StorageStack extends Stack {
       removalPolicy: RemovalPolicy.RETAIN,
     });
     this.transformationCounterTable = transformationTableConstruct.table;
+
+    const userProgressTableConstruct = new StandardTable(this, 'UserProgressTableConstruct', {
+      tableName: 'UserProgressTable',
+      partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      removalPolicy: RemovalPolicy.RETAIN,
+    });
+    this.userProgressTable = userProgressTableConstruct.table;
 
     const progressTableConstruct = new StandardTable(this, 'ProgressTableConstruct', {
       tableName: 'ProgressTable',

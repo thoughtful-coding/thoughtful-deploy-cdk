@@ -16,6 +16,7 @@ export interface ComputeStackProps extends StackProps {
   readonly outputBucket: s3.IBucket;
   readonly transformationCounterTable: dynamodb.ITable;
   readonly userProgressTable: dynamodb.ITable;
+  readonly progressTable: dynamodb.ITable;
   readonly learningEntriesTable: dynamodb.ITable;
   readonly primmSubmissionsTable: dynamodb.ITable;
   readonly throttlingStoreTable: dynamodb.ITable;
@@ -57,12 +58,13 @@ export class ComputeStack extends Stack {
       imageTag: props.imageTag,
       cmd: ['aws_src_sample.lambdas.user_progress_lambda.user_progress_lambda_handler'],
       environment: {
-        // USER_PROGRESS_TABLE_NAME: props.userProgressTable.tableName,
+        PROGRESS_TABLE_NAME: props.progressTable.tableName,
       },
     });
     this.userProgressLambda = userProgressLambdaConstruct.function;
     // Grant specific permissions
-    // props.userProgressTable.grantReadWriteData(this.userProgressLambda);
+    props.userProgressTable.grantReadWriteData(this.userProgressLambda);
+    props.progressTable.grantReadWriteData(this.userProgressLambda);
 
     const learningEntriesLambdaConstruct = new BasicDockerLambda(this, 'LearningEntriesLambda', {
       functionNameSuffix: 'LearningEntries',
@@ -108,7 +110,7 @@ export class ComputeStack extends Stack {
       cmd: ['aws_src_sample.lambdas.instructor_portal_lambda.instructor_portal_lambda_handler'],
       environment: {
         USER_PERMISSIONS_TABLE_NAME: props.userPermissionsTable.tableName,
-        // USER_PROGRESS_TABLE_NAME: props.userProgressTable.tableName,
+        PROGRESS_TABLE_NAME: props.progressTable.tableName,
         LEARNING_ENTRIES_TABLE_NAME: props.learningEntriesTable.tableName,
         PRIMM_SUBMISSIONS_TABLE_NAME: props.primmSubmissionsTable.tableName,
       },
@@ -116,30 +118,9 @@ export class ComputeStack extends Stack {
     this.instructorPortalLambda = instructorPortalLambdaConstruct.function;
     // Grant specific permissions
     props.userPermissionsTable.grantReadData(this.instructorPortalLambda);
-    // props.userProgressTable.grantReadData(this.instructorPortalLambda);
+    props.userProgressTable.grantReadData(this.instructorPortalLambda);
+    props.progressTable.grantReadData(this.instructorPortalLambda);
     props.learningEntriesTable.grantReadWriteData(this.instructorPortalLambda);
     props.primmSubmissionsTable.grantWriteData(this.instructorPortalLambda);
-
-    // CloudFormation Outputs for Lambda Function ARNs (optional, but can be useful)
-
-    new cdk.CfnOutput(this, 'ApiTransformationLambdaArn', {
-      value: this.apiTransformationLambda.functionArn,
-    });
-
-    new cdk.CfnOutput(this, 'UserProgressLambdaArn', {
-      value: this.userProgressLambda.functionArn,
-    });
-
-    new cdk.CfnOutput(this, 'LearningEntriesLambdaArn', {
-      value: this.learningEntriesLambda.functionArn,
-    });
-
-    new cdk.CfnOutput(this, 'PRIMMFeedbackLambdaArn', {
-      value: this.primmFeedbackLambda.functionArn,
-    });
-
-    new cdk.CfnOutput(this, 'InstructorPortalLambdaArn', {
-      value: this.instructorPortalLambda.functionArn,
-    });
   }
 }

@@ -33,6 +33,7 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
   outputBucket: storageStack.outputBucket,
   transformationCounterTable: storageStack.transformationCounterTable,
   userProgressTable: storageStack.userProgressTable,
+  progressTable: storageStack.progressTable,
   learningEntriesTable: storageStack.learningEntriesTable,
   primmSubmissionsTable: storageStack.primmSubmissionsTable,
   throttlingStoreTable: storageStack.throttlingStoreTable,

@@ -108,7 +108,7 @@ export class ComputeStack extends Stack {
       cmd: ['aws_src_sample.lambdas.instructor_portal_lambda.instructor_portal_lambda_handler'],
       environment: {
         USER_PERMISSIONS_TABLE_NAME: props.userPermissionsTable.tableName,
-        USER_PROGRESS_TABLE_NAME: props.userProgressTable.tableName,
+        // USER_PROGRESS_TABLE_NAME: props.userProgressTable.tableName,
         LEARNING_ENTRIES_TABLE_NAME: props.learningEntriesTable.tableName,
         PRIMM_SUBMISSIONS_TABLE_NAME: props.primmSubmissionsTable.tableName,
       },
@@ -116,7 +116,7 @@ export class ComputeStack extends Stack {
     this.instructorPortalLambda = instructorPortalLambdaConstruct.function;
     // Grant specific permissions
     props.userPermissionsTable.grantReadData(this.instructorPortalLambda);
-    props.userProgressTable.grantReadData(this.instructorPortalLambda);
+    // props.userProgressTable.grantReadData(this.instructorPortalLambda);
     props.learningEntriesTable.grantReadWriteData(this.instructorPortalLambda);
     props.primmSubmissionsTable.grantWriteData(this.instructorPortalLambda);
 

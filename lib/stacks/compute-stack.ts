@@ -57,12 +57,12 @@ export class ComputeStack extends Stack {
       imageTag: props.imageTag,
       cmd: ['aws_src_sample.lambdas.user_progress_lambda.user_progress_lambda_handler'],
       environment: {
-        USER_PROGRESS_TABLE_NAME: props.userProgressTable.tableName,
+        // USER_PROGRESS_TABLE_NAME: props.userProgressTable.tableName,
       },
     });
     this.userProgressLambda = userProgressLambdaConstruct.function;
     // Grant specific permissions
-    props.userProgressTable.grantReadWriteData(this.userProgressLambda);
+    // props.userProgressTable.grantReadWriteData(this.userProgressLambda);
 
     const learningEntriesLambdaConstruct = new BasicDockerLambda(this, 'LearningEntriesLambda', {
       functionNameSuffix: 'LearningEntries',

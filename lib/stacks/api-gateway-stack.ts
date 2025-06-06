@@ -54,7 +54,7 @@ export class APIGatewayStack extends Stack {
     new ApiRoute(this, 'UserProgressRoute', {
       httpApi: this.httpApi,
       routePath: '/progress',
-      methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST, apigwv2.HttpMethod.PUT],
+      methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.PUT],
       handler: props.userProgressLambda,
       authorizer: googleJwtAuthorizer,
     });
@@ -94,6 +94,14 @@ export class APIGatewayStack extends Stack {
     new ApiRoute(this, 'InstructorStudentUnitProgressRoute', {
       httpApi: this.httpApi,
       routePath: '/instructor/students/{studentId}/units/{unitId}/progress',
+      methods: [apigwv2.HttpMethod.GET],
+      handler: props.instructorPortalLambda,
+      authorizer: googleJwtAuthorizer,
+    });
+
+    new ApiRoute(this, 'InstructorStudentLearningEntriesRoute', {
+      httpApi: this.httpApi,
+      routePath: '/instructor/students/{studentId}/learning-entries',
       methods: [apigwv2.HttpMethod.GET],
       handler: props.instructorPortalLambda,
       authorizer: googleJwtAuthorizer,

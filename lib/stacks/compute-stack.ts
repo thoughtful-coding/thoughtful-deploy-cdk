@@ -123,6 +123,6 @@ export class ComputeStack extends Stack {
     props.userProgressTable.grantReadData(this.instructorPortalLambda);
     props.progressTable.grantReadData(this.instructorPortalLambda);
     props.learningEntriesTable.grantReadWriteData(this.instructorPortalLambda);
-    props.primmSubmissionsTable.grantWriteData(this.instructorPortalLambda);
+    props.primmSubmissionsTable.grantReadWriteData(this.instructorPortalLambda);
   }
 }

@@ -11,6 +11,7 @@ export interface FoundationalResourcesStackProps extends StackProps {
 export class FoundationalResourcesStack extends Stack {
   public readonly dockerRepository: ecr.IRepository;
   public readonly chatbotApiKeySecret: ManagedSecret;
+  public readonly jwtSecret: ManagedSecret;
 
   constructor(scope: Construct, id: string, props: FoundationalResourcesStackProps) {
     super(scope, id, props);
@@ -39,6 +40,17 @@ export class FoundationalResourcesStack extends Stack {
 
     this.chatbotApiKeySecret = new ManagedSecret(this, 'AppChatBotApiKey', {
       secretName: '/thoughtful-python/chatbot-api-key',
+    });
+
+    this.jwtSecret = new ManagedSecret(this, 'AppJwtSecretKey', {
+      secretName: '/thoughtful-python/jwt-secret-key',
+      // It's recommended to have CDK generate a strong secret for you
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({ username: 'jwt-user' }),
+        generateStringKey: 'password',
+        passwordLength: 32,
+        excludePunctuation: true,
+      },
     });
   }
 }

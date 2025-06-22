@@ -40,6 +40,7 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
   refreshTokenTable: storageStack.refreshTokenTable,
   userPermissionsTable: storageStack.userPermissionsTable,
   chatbotApiKeySecret: foundationalStack.chatbotApiKeySecret,
+  jwtSecret: foundationalStack.jwtSecret,
 });
 
 const apiRoutesStack = new APIGatewayStack(app, 'SampleApiRoutesStack', {

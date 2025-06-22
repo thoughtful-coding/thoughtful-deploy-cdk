@@ -1,4 +1,4 @@
-import { Stack, StackProps, Duration, CfnOutput } from 'aws-cdk-lib';
+import { Stack, StackProps, Duration } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
 import { Construct } from 'constructs';
@@ -124,11 +124,28 @@ export class APIGatewayStack extends Stack {
       authorizer: googleJwtAuthorizer,
     });
 
-    // CloudFormation Output for the API endpoint
-    new CfnOutput(this, 'ApiEndpointOutput', {
-      value: this.apiEndpoint,
-      description: 'Endpoint URL for the Sample App API',
-      exportName: 'SampleAppApiEndpoint',
+    new ApiRoute(this, 'AuthLoginRoute', {
+      httpApi: this.httpApi,
+      routePath: '/auth/login',
+      methods: [apigwv2.HttpMethod.POST],
+      handler: props.authLambda,
+      // No 'authorizer' property, making this route public
+    });
+
+    new ApiRoute(this, 'AuthRefreshRoute', {
+      httpApi: this.httpApi,
+      routePath: '/auth/refresh',
+      methods: [apigwv2.HttpMethod.POST],
+      handler: props.authLambda,
+      // No 'authorizer' property, making this route public
+    });
+
+    new ApiRoute(this, 'AuthLogoutRoute', {
+      httpApi: this.httpApi,
+      routePath: '/auth/logout',
+      methods: [apigwv2.HttpMethod.POST],
+      handler: props.authLambda,
+      // No 'authorizer' property, making this route public
     });
   }
 }

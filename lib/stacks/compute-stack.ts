@@ -1,11 +1,10 @@
-import * as cdk from 'aws-cdk-lib';
 import { Stack, StackProps } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
-import { EnvironmentProps } from '../utils/config';
+import { EnvironmentProps, GOOGLE_CLIENT_ID } from '../utils/config';
 import { BasicDockerLambda } from '../constructs/lambda';
 import { ManagedSecret } from '../constructs/secret-manager';
 
@@ -23,6 +22,7 @@ export interface ComputeStackProps extends StackProps {
   readonly refreshTokenTable: dynamodb.ITable;
   readonly userPermissionsTable: dynamodb.ITable;
   readonly chatbotApiKeySecret: ManagedSecret;
+  readonly jwtSecret: ManagedSecret;
 }
 
 export class ComputeStack extends Stack {
@@ -76,7 +76,7 @@ export class ComputeStack extends Stack {
       imageTag: props.imageTag,
       cmd: ['aws_src_sample.lambdas.learning_entries_lambda.learning_entries_lambda_handler'],
       environment: {
-        CHATBOT_API_KEY_SECRETS_ARN: props.chatbotApiKeySecret.secretArn,
+        CHATBOT_API_KEY_SECRET_ARN: props.chatbotApiKeySecret.secretArn,
         THROTTLING_TABLE_NAME: props.throttlingStoreTable.tableName,
         LEARNING_ENTRIES_TABLE_NAME: props.learningEntriesTable.tableName,
       },
@@ -94,7 +94,7 @@ export class ComputeStack extends Stack {
       imageTag: props.imageTag,
       cmd: ['aws_src_sample.lambdas.primm_feedback_lambda.primm_feedback_lambda_handler'],
       environment: {
-        CHATBOT_API_KEY_SECRETS_ARN: props.chatbotApiKeySecret.secretArn,
+        CHATBOT_API_KEY_SECRET_ARN: props.chatbotApiKeySecret.secretArn,
         THROTTLING_TABLE_NAME: props.throttlingStoreTable.tableName,
         PRIMM_SUBMISSIONS_TABLE_NAME: props.primmSubmissionsTable.tableName,
       },
@@ -135,10 +135,12 @@ export class ComputeStack extends Stack {
       cmd: ['aws_src_sample.lambdas.auth_lambda.auth_lambda_handler'],
       environment: {
         REFRESH_TOKEN_TABLE_NAME: props.refreshTokenTable.tableName,
-        // We will add more environment variables for JWT secrets in a later step
+        JWT_SECRET_ARN: props.jwtSecret.secretArn,
+        GOOGLE_CLIENT_ID: GOOGLE_CLIENT_ID,
       },
     });
     this.authLambda = authLambdaConstruct.function;
+    props.jwtSecret.grantRead(this.authLambda);
 
     props.refreshTokenTable.grantReadWriteData(this.authLambda);
   }

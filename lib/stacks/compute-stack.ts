@@ -1,4 +1,4 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { Duration, Stack, StackProps } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as s3 from 'aws-cdk-lib/aws-s3';
@@ -32,6 +32,7 @@ export class ComputeStack extends Stack {
   public readonly primmFeedbackLambda: lambda.IFunction;
   public readonly instructorPortalLambda: lambda.IFunction;
   public readonly authLambda: lambda.IFunction;
+  public readonly authorizerLambda: lambda.IFunction;
 
   constructor(scope: Construct, id: string, props: ComputeStackProps) {
     super(scope, id, props);
@@ -141,7 +142,21 @@ export class ComputeStack extends Stack {
     });
     this.authLambda = authLambdaConstruct.function;
     props.jwtSecret.grantRead(this.authLambda);
-
     props.refreshTokenTable.grantReadWriteData(this.authLambda);
+
+    const authorizerLambdaConstruct = new BasicDockerLambda(this, 'AuthorizerLambda', {
+      functionNameSuffix: 'TokenAuthorizer',
+      description: 'Validates custom JWT access tokens for API Gateway.',
+      dockerRepository: props.dockerRepository,
+      imageTag: props.imageTag,
+      cmd: ['aws_src_sample.lambdas.authorizer_lambda.authorizer_lambda_handler'],
+      environment: {
+        JWT_SECRET_KEY_ARN: props.jwtSecret.secretArn,
+      },
+      timeout: Duration.seconds(10), // Authorizers should be fast
+    });
+    this.authorizerLambda = authorizerLambdaConstruct.function;
+    // Grant specific permissions
+    props.jwtSecret.grantRead(this.authorizerLambda);
   }
 }

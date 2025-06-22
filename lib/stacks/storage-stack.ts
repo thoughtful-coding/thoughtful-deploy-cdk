@@ -147,10 +147,5 @@ export class StorageStack extends Stack {
       value: this.primmSubmissionsTable.tableName,
       description: 'Name of the PrimmSubmissions DynamoDB table',
     });
-
-    new CfnOutput(this, 'ThrottlingStoreTableNameOutput', {
-      value: this.throttlingStoreTable.tableName,
-      description: 'Name of the ThrottlingStore DynamoDB table',
-    });
   }
 }

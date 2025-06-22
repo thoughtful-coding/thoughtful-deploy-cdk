@@ -82,7 +82,7 @@ export class APIGatewayStack extends Stack {
       routePath: '/primm-feedback',
       methods: [apigwv2.HttpMethod.POST],
       handler: props.primmFeedbackLambda,
-      authorizer: googleJwtAuthorizer,
+      authorizer: customAuthorizer,
     });
 
     new ApiRoute(this, 'InstructorStudentsRoute', {

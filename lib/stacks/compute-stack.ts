@@ -151,7 +151,7 @@ export class ComputeStack extends Stack {
       imageTag: props.imageTag,
       cmd: ['aws_src_sample.lambdas.authorizer_lambda.authorizer_lambda_handler'],
       environment: {
-        JWT_SECRET_KEY_ARN: props.jwtSecret.secretArn,
+        JWT_SECRET_ARN: props.jwtSecret.secretArn,
       },
       timeout: Duration.seconds(10), // Authorizers should be fast
     });

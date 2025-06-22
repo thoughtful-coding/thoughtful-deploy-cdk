@@ -37,6 +37,7 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
   learningEntriesTable: storageStack.learningEntriesTable,
   primmSubmissionsTable: storageStack.primmSubmissionsTable,
   throttlingStoreTable: storageStack.throttlingStoreTable,
+  refreshTokenTable: storageStack.refreshTokenTable,
   userPermissionsTable: storageStack.userPermissionsTable,
   chatbotApiKeySecret: foundationalStack.chatbotApiKeySecret,
 });

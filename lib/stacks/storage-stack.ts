@@ -19,6 +19,7 @@ export class StorageStack extends Stack {
   public readonly learningEntriesTable: dynamodb.ITable;
   public readonly primmSubmissionsTable: dynamodb.ITable;
   public readonly throttlingStoreTable: dynamodb.ITable;
+  public readonly refreshTokenTable: dynamodb.ITable;
   public readonly userPermissionsTable: dynamodb.ITable;
 
   constructor(scope: Construct, id: string, props: StorageStackProps) {
@@ -92,6 +93,15 @@ export class StorageStack extends Stack {
     });
     this.throttlingStoreTable = throttlingStoreTableConstruct.table;
 
+    const refreshTokenTableConstruct = new StandardTable(this, 'RefreshTokenTableConstruct', {
+      tableName: 'RefreshTokenTable',
+      partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'tokenId', type: dynamodb.AttributeType.STRING },
+      timeToLiveAttribute: 'ttl',
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
+    this.refreshTokenTable = refreshTokenTableConstruct.table;
+
     const userPermissionsTable = new dynamodb.Table(this, 'UserPermissionsTable', {
       tableName: 'UserPermissions',
       partitionKey: { name: 'granterUserId', type: dynamodb.AttributeType.STRING },
@@ -141,11 +151,6 @@ export class StorageStack extends Stack {
     new CfnOutput(this, 'ThrottlingStoreTableNameOutput', {
       value: this.throttlingStoreTable.tableName,
       description: 'Name of the ThrottlingStore DynamoDB table',
-    });
-
-    new CfnOutput(this, 'UserPermissionsTableNameOutput', {
-      value: this.userPermissionsTable.tableName,
-      description: 'Named of the UserPermissions DynamoDB table',
     });
   }
 }

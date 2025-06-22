@@ -20,6 +20,7 @@ export interface ComputeStackProps extends StackProps {
   readonly learningEntriesTable: dynamodb.ITable;
   readonly primmSubmissionsTable: dynamodb.ITable;
   readonly throttlingStoreTable: dynamodb.ITable;
+  readonly refreshTokenTable: dynamodb.ITable;
   readonly userPermissionsTable: dynamodb.ITable;
   readonly chatbotApiKeySecret: ManagedSecret;
 }

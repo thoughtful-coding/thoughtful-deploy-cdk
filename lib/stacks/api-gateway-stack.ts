@@ -12,6 +12,7 @@ export interface APIGatewayStackProps extends StackProps {
   readonly learningEntriesLambda: lambda.IFunction;
   readonly primmFeedbackLambda: lambda.IFunction;
   readonly instructorPortalLambda: lambda.IFunction;
+  readonly authLambda: lambda.IFunction;
 }
 
 export class APIGatewayStack extends Stack {

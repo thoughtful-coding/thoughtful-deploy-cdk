@@ -31,6 +31,7 @@ export class ComputeStack extends Stack {
   public readonly learningEntriesLambda: lambda.IFunction;
   public readonly primmFeedbackLambda: lambda.IFunction;
   public readonly instructorPortalLambda: lambda.IFunction;
+  public readonly authLambda: lambda.IFunction;
 
   constructor(scope: Construct, id: string, props: ComputeStackProps) {
     super(scope, id, props);
@@ -125,5 +126,20 @@ export class ComputeStack extends Stack {
     props.progressTable.grantReadData(this.instructorPortalLambda);
     props.learningEntriesTable.grantReadWriteData(this.instructorPortalLambda);
     props.primmSubmissionsTable.grantReadWriteData(this.instructorPortalLambda);
+
+    const authLambdaConstruct = new BasicDockerLambda(this, 'AuthLambda', {
+      functionNameSuffix: 'AuthHandler',
+      description: 'Handles user login, logout, and token refresh.',
+      dockerRepository: props.dockerRepository,
+      imageTag: props.imageTag,
+      cmd: ['aws_src_sample.lambdas.auth_lambda.auth_lambda_handler'],
+      environment: {
+        REFRESH_TOKEN_TABLE_NAME: props.refreshTokenTable.tableName,
+        // We will add more environment variables for JWT secrets in a later step
+      },
+    });
+    this.authLambda = authLambdaConstruct.function;
+
+    props.refreshTokenTable.grantReadWriteData(this.authLambda);
   }
 }

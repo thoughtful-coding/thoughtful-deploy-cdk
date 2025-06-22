@@ -2,8 +2,9 @@ import { Stack, StackProps, Duration } from 'aws-cdk-lib';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
 import { Construct } from 'constructs';
+import { HttpJwtAuthorizer } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import { ApiRoute } from '../constructs/api-route';
-import { HttpLambdaAuthorizer, HttpLambdaResponseType } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
+import { GOOGLE_CLIENT_ID } from '../utils/config';
 
 export interface APIGatewayStackProps extends StackProps {
   readonly apiTransformationLambda: lambda.IFunction;
@@ -48,9 +49,8 @@ export class APIGatewayStack extends Stack {
       handler: props.apiTransformationLambda,
     });
 
-    const customAuthorizer = new HttpLambdaAuthorizer('CustomLambdaAuthorizer', props.authorizerLambda, {
-      responseTypes: [HttpLambdaResponseType.IAM], // Required for this policy format
-      identitySource: ['$request.header.Authorization'],
+    const googleJwtAuthorizer = new HttpJwtAuthorizer('GoogleJwtAuthorizer', 'https://accounts.google.com', {
+      jwtAudience: [GOOGLE_CLIENT_ID],
     });
 
     new ApiRoute(this, 'UserProgressRoute', {
@@ -58,7 +58,7 @@ export class APIGatewayStack extends Stack {
       routePath: '/progress',
       methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.PUT],
       handler: props.userProgressLambda,
-      authorizer: customAuthorizer,
+      authorizer: googleJwtAuthorizer,
     });
 
     new ApiRoute(this, 'LearningEntryRoute', {
@@ -66,7 +66,7 @@ export class APIGatewayStack extends Stack {
       routePath: '/learning-entries',
       methods: [apigwv2.HttpMethod.GET],
       handler: props.learningEntriesLambda,
-      authorizer: customAuthorizer,
+      authorizer: googleJwtAuthorizer,
     });
 
     new ApiRoute(this, 'ReflectionsFeedbackRoute', {
@@ -74,7 +74,7 @@ export class APIGatewayStack extends Stack {
       routePath: '/reflections/{lessonId}/sections/{sectionId}',
       methods: [apigwv2.HttpMethod.GET, apigwv2.HttpMethod.POST],
       handler: props.learningEntriesLambda,
-      authorizer: customAuthorizer,
+      authorizer: googleJwtAuthorizer,
     });
 
     new ApiRoute(this, 'PRIMMFeedbackRoute', {
@@ -82,7 +82,7 @@ export class APIGatewayStack extends Stack {
       routePath: '/primm-feedback',
       methods: [apigwv2.HttpMethod.POST],
       handler: props.primmFeedbackLambda,
-      authorizer: customAuthorizer,
+      authorizer: googleJwtAuthorizer,
     });
 
     new ApiRoute(this, 'InstructorStudentsRoute', {
@@ -90,7 +90,7 @@ export class APIGatewayStack extends Stack {
       routePath: '/instructor/students',
       methods: [apigwv2.HttpMethod.GET],
       handler: props.instructorPortalLambda,
-      authorizer: customAuthorizer,
+      authorizer: googleJwtAuthorizer,
     });
 
     new ApiRoute(this, 'InstructorStudentUnitProgressRoute', {
@@ -98,7 +98,7 @@ export class APIGatewayStack extends Stack {
       routePath: '/instructor/students/{studentId}/units/{unitId}/progress',
       methods: [apigwv2.HttpMethod.GET],
       handler: props.instructorPortalLambda,
-      authorizer: customAuthorizer,
+      authorizer: googleJwtAuthorizer,
     });
 
     new ApiRoute(this, 'InstructorStudentLearningEntriesRoute', {
@@ -106,7 +106,7 @@ export class APIGatewayStack extends Stack {
       routePath: '/instructor/students/{studentId}/learning-entries',
       methods: [apigwv2.HttpMethod.GET],
       handler: props.instructorPortalLambda,
-      authorizer: customAuthorizer,
+      authorizer: googleJwtAuthorizer,
     });
 
     new ApiRoute(this, 'InstructorUnitProgressRoute', {
@@ -114,7 +114,7 @@ export class APIGatewayStack extends Stack {
       routePath: '/instructor/units/{unitId}/class-progress',
       methods: [apigwv2.HttpMethod.GET],
       handler: props.instructorPortalLambda,
-      authorizer: customAuthorizer,
+      authorizer: googleJwtAuthorizer,
     });
 
     new ApiRoute(this, 'InstructorAssignmentSubmissionsRoute', {
@@ -122,7 +122,7 @@ export class APIGatewayStack extends Stack {
       routePath: '/instructor/units/{unitId}/lessons/{lessonId}/sections/{sectionId}/assignment-submissions',
       methods: [apigwv2.HttpMethod.GET],
       handler: props.instructorPortalLambda,
-      authorizer: customAuthorizer,
+      authorizer: googleJwtAuthorizer,
     });
 
     new ApiRoute(this, 'AuthLoginRoute', {

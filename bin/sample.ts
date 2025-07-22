@@ -56,4 +56,8 @@ const apiRoutesStack = new APIGatewayStack(app, 'SampleApiRoutesStack', {
 
 const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
   apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
+  authLambda: lambdaComputeStack.authLambda,
+  authorizerLambda: lambdaComputeStack.authorizerLambda,
+  learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
+  primmFeedbackLambda: lambdaComputeStack.primmFeedbackLambda,
 });

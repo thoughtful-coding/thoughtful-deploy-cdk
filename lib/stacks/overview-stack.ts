@@ -1,45 +1,111 @@
-import { Duration, Stack, StackProps } from 'aws-cdk-lib';
-import { Dashboard, GraphWidget } from 'aws-cdk-lib/aws-cloudwatch';
-import { Construct } from 'constructs';
+import { Stack, StackProps, Duration } from 'aws-cdk-lib';
+import * as cw from 'aws-cdk-lib/aws-cloudwatch';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
+import { Construct } from 'constructs';
 
 export interface OverviewStackProps extends StackProps {
-  readonly apiTransformationLambda: lambda.IFunction;
+  apiTransformationLambda: lambda.IFunction;
+  authLambda: lambda.IFunction;
+  authorizerLambda: lambda.IFunction;
+  learningEntriesLambda: lambda.IFunction;
+  primmFeedbackLambda: lambda.IFunction;
 }
 
 export class OverviewStack extends Stack {
   constructor(scope: Construct, id: string, props: OverviewStackProps) {
     super(scope, id, props);
 
-    // Create a new CloudWatch Dashboard
-    const dashboard = new Dashboard(this, 'LambdaDashboard', {
-      dashboardName: 'LambdaActivityDashboard',
+    const dashboard = new cw.Dashboard(this, 'AppDashboard', {
+      dashboardName: 'ThoughtfulPython-Overview',
     });
 
-    // Widget for Lambda Invocations
-    const invocationWidget = new GraphWidget({
-      title: 'Transform Lambda Invocations',
-      left: [
-        props.apiTransformationLambda.metricInvocations({
-          statistic: 'Sum',
-          period: Duration.minutes(1),
-        }),
-      ],
-    });
-    dashboard.addWidgets(invocationWidget);
+    // --- Reusable Widget Creation Functions ---
 
-    // Widget for Lambda Errors
-    const errorWidget = new GraphWidget({
-      title: 'Transform Lambda Invocation Errors',
-      left: [
-        props.apiTransformationLambda.metricErrors({
-          statistic: 'Sum',
-          period: Duration.minutes(1),
-        }),
-      ],
-    });
+    const createLambdaPerformanceWidget = (title: string, lambdaFunc: lambda.IFunction) => {
+      return new cw.GraphWidget({
+        title,
+        width: 12,
+        left: [
+          lambdaFunc.metricInvocations({ label: 'Invocations', period: Duration.minutes(5), color: cw.Color.BLUE }),
+          lambdaFunc.metricErrors({ label: 'Errors', period: Duration.minutes(5), color: cw.Color.RED }),
+        ],
+        right: [
+          lambdaFunc.metricDuration({
+            label: 'Latency (p90)',
+            period: Duration.minutes(5),
+            statistic: 'p90',
+            color: cw.Color.ORANGE,
+          }),
+        ],
+      });
+    };
 
-    // Add widgets to the dashboard
-    dashboard.addWidgets(errorWidget);
+    const createCustomMetricWidget = (
+      title: string,
+      namespace: string,
+      metrics: { name: string; label: string; color?: string }[]
+    ) => {
+      return new cw.GraphWidget({
+        title,
+        width: 12,
+        left: metrics.map(
+          (m) =>
+            new cw.Metric({
+              namespace,
+              metricName: m.name,
+              label: m.label,
+              statistic: 'sum',
+              period: Duration.minutes(5),
+              color: m.color,
+            })
+        ),
+      });
+    };
+
+    // --- SECTION 1: 3D Printing Transformations ---
+    dashboard.addWidgets(new cw.TextWidget({ markdown: '## 1. 3D Printing Transformations', width: 24, height: 1 }));
+    dashboard.addWidgets(
+      createLambdaPerformanceWidget('STL Transformation Lambda Performance', props.apiTransformationLambda)
+    );
+
+    // --- SECTION 2: Thoughtful Teaching Authentication ---
+    dashboard.addWidgets(new cw.TextWidget({ markdown: '## 2. Authentication Service', width: 24, height: 1 }));
+    const authRow = new cw.Row(
+      createCustomMetricWidget('Authorizer Events (SUM)', 'ThoughtfulPython/Authentication', [
+        { name: 'AuthorizationSuccess', label: 'Success', color: cw.Color.GREEN },
+        { name: 'AuthorizationFailure', label: 'Failure (Deny)', color: cw.Color.RED },
+      ]),
+      createCustomMetricWidget('Session Events (SUM)', 'ThoughtfulPython/Authentication', [
+        { name: 'LoginSuccess', label: 'Logins' },
+        { name: 'RefreshSuccess', label: 'Refreshes' },
+        { name: 'LoginFailure', label: 'Login Failures' },
+        { name: 'RefreshFailure', label: 'Refresh Failures' },
+      ])
+    );
+    dashboard.addWidgets(authRow);
+    dashboard.addWidgets(
+      new cw.Row(
+        createLambdaPerformanceWidget('Authorizer Lambda Performance', props.authorizerLambda),
+        createLambdaPerformanceWidget('Session Lambda Performance', props.authLambda)
+      )
+    );
+
+    // --- SECTION 3: ChatBot Usage ---
+    dashboard.addWidgets(new cw.TextWidget({ markdown: '## 3. ChatBot Usage & Health', width: 24, height: 1 }));
+    const chatbotRow = new cw.Row(
+      createCustomMetricWidget('ChatBot Events (SUM)', 'ThoughtfulPython/ChatBot', [
+        { name: 'ChatBotApiFailure', label: 'ChatBot API Failures', color: cw.Color.RED },
+        { name: 'ThrottledRequest', label: 'Throttled Users', color: cw.Color.ORANGE },
+      ]),
+      new cw.GraphWidget({
+        title: 'ChatBot Lambda Invocations (SUM)',
+        width: 12,
+        left: [
+          props.learningEntriesLambda.metricInvocations({ label: 'Reflection Lambda' }),
+          props.primmFeedbackLambda.metricInvocations({ label: 'PRIMM Lambda' }),
+        ],
+      })
+    );
+    dashboard.addWidgets(chatbotRow);
   }
 }

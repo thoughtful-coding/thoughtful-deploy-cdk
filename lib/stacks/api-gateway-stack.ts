@@ -6,7 +6,6 @@ import { HttpLambdaAuthorizer, HttpLambdaResponseType } from 'aws-cdk-lib/aws-ap
 import { ApiRoute } from '../constructs/api-route';
 
 export interface APIGatewayStackProps extends StackProps {
-  readonly apiTransformationLambda: lambda.IFunction;
   readonly userProgressLambda: lambda.IFunction;
   readonly learningEntriesLambda: lambda.IFunction;
   readonly primmFeedbackLambda: lambda.IFunction;
@@ -40,13 +39,6 @@ export class APIGatewayStack extends Stack {
     this.apiEndpoint = this.httpApi.url!; // The ! asserts that apiEndpoint is not undefined
 
     // Define Routes using the custom ApiRoute construct
-
-    new ApiRoute(this, 'TransformCsvRoute', {
-      httpApi: this.httpApi,
-      routePath: '/transform_csv',
-      methods: [apigwv2.HttpMethod.POST],
-      handler: props.apiTransformationLambda,
-    });
 
     const customAuthorizer = new HttpLambdaAuthorizer('CustomLambdaAuthorizer', props.authorizerLambda, {
       responseTypes: [HttpLambdaResponseType.IAM], // Required for this policy format

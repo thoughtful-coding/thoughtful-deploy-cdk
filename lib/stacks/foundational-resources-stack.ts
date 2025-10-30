@@ -22,7 +22,7 @@ export class FoundationalResourcesStack extends Stack {
       imageScanOnPush: true,
       lifecycleRules: [
         {
-          description: 'Keep only the last 10 images',
+          description: 'Keep only the last 2 images',
           maxImageCount: 2,
           tagStatus: ecr.TagStatus.ANY,
         },

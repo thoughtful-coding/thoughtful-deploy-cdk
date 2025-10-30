@@ -4,7 +4,6 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Construct } from 'constructs';
 
 export interface OverviewStackProps extends StackProps {
-  apiTransformationLambda: lambda.IFunction;
   authLambda: lambda.IFunction;
   authorizerLambda: lambda.IFunction;
   learningEntriesLambda: lambda.IFunction;
@@ -62,13 +61,7 @@ export class OverviewStack extends Stack {
       });
     };
 
-    // --- SECTION 1: 3D Printing Transformations ---
-    dashboard.addWidgets(new cw.TextWidget({ markdown: '## 1. 3D Printing Transformations', width: 24, height: 1 }));
-    dashboard.addWidgets(
-      createLambdaPerformanceWidget('STL Transformation Lambda Performance', props.apiTransformationLambda)
-    );
-
-    // --- SECTION 2: Thoughtful Teaching Authentication ---
+    // --- SECTION 1: Thoughtful Teaching Authentication ---
     dashboard.addWidgets(new cw.TextWidget({ markdown: '## 2. Authentication Service', width: 24, height: 1 }));
     const authRow = new cw.Row(
       createCustomMetricWidget('Authorizer Events (SUM)', 'ThoughtfulPython/Authentication', [
@@ -90,7 +83,7 @@ export class OverviewStack extends Stack {
       )
     );
 
-    // --- SECTION 3: ChatBot Usage ---
+    // --- SECTION 2: ChatBot Usage ---
     dashboard.addWidgets(new cw.TextWidget({ markdown: '## 3. ChatBot Usage & Health', width: 24, height: 1 }));
     const chatbotRow = new cw.Row(
       createCustomMetricWidget('ChatBot Events (SUM)', 'ThoughtfulPython/ChatBot', [

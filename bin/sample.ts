@@ -30,10 +30,7 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
   envProps: envProps,
   dockerRepository: foundationalStack.dockerRepository,
   imageTag: imageTag || 'latest', // Ensure this fallback is acceptable or handle error
-  outputBucket: storageStack.outputBucket,
-  transformationCounterTable: storageStack.transformationCounterTable,
   userProgressTable: storageStack.userProgressTable,
-  progressTable: storageStack.progressTable,
   learningEntriesTable: storageStack.learningEntriesTable,
   primmSubmissionsTable: storageStack.primmSubmissionsTable,
   throttlingStoreTable: storageStack.throttlingStoreTable,
@@ -44,7 +41,6 @@ const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
 });
 
 const apiRoutesStack = new APIGatewayStack(app, 'SampleApiRoutesStack', {
-  apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
   userProgressLambda: lambdaComputeStack.userProgressLambda,
   learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
   primmFeedbackLambda: lambdaComputeStack.primmFeedbackLambda,
@@ -55,7 +51,6 @@ const apiRoutesStack = new APIGatewayStack(app, 'SampleApiRoutesStack', {
 });
 
 const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
-  apiTransformationLambda: lambdaComputeStack.apiTransformationLambda,
   authLambda: lambdaComputeStack.authLambda,
   authorizerLambda: lambdaComputeStack.authorizerLambda,
   learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,

@@ -14,7 +14,7 @@ export class StorageStack extends Stack {
   public readonly userProgressTable: dynamodb.ITable;
   public readonly learningEntriesTable: dynamodb.ITable;
   public readonly primmSubmissionsTable: dynamodb.ITable;
-  public readonly throttlingStoreTable: dynamodb.ITable;
+  public readonly throttleTable: dynamodb.ITable;
   public readonly refreshTokenTable: dynamodb.ITable;
   public readonly userPermissionsTable: dynamodb.ITable;
 
@@ -23,9 +23,10 @@ export class StorageStack extends Stack {
 
     // DynamoDB Tables
 
-    const userProgressTableConstruct = new StandardTable(this, 'UserProgressTableConstruct', {
+    const userProgressTableConstruct = new StandardTable(this, 'UserProgressTable', {
       tableName: 'UserProgressTable',
       partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'unitId', type: dynamodb.AttributeType.STRING },
       removalPolicy: RemovalPolicy.RETAIN,
     });
     this.userProgressTable = userProgressTableConstruct.table;
@@ -45,23 +46,23 @@ export class StorageStack extends Stack {
     });
     this.learningEntriesTable = learningEntriesTable;
 
-    const primmSubmissionsTableConstruct = new StandardTable(this, 'UserPrimmSubmissionsTable', {
-      tableName: 'UserPrimmSubmissions',
+    const primmSubmissionsTableConstruct = new StandardTable(this, 'PrimmSubmissionsTable', {
+      tableName: 'PrimmSubmissionsTable',
       partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
       // SK: lessonId#sectionId#primmExampleId#timestamp
       sortKey: { name: 'submissionCompositeKey', type: dynamodb.AttributeType.STRING },
     });
     this.primmSubmissionsTable = primmSubmissionsTableConstruct.table;
 
-    const throttlingStoreTableConstruct = new StandardTable(this, 'ThrottlingStoreTable', {
-      tableName: 'ThrottlingStore',
+    const throttleTableConstruct = new StandardTable(this, 'ThrottleTable', {
+      tableName: 'ThrottleTable',
       partitionKey: { name: 'entityActionId', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'periodType#periodIdentifier', type: dynamodb.AttributeType.STRING },
       timeToLiveAttribute: 'ttl',
     });
-    this.throttlingStoreTable = throttlingStoreTableConstruct.table;
+    this.throttleTable = throttleTableConstruct.table;
 
-    const refreshTokenTableConstruct = new StandardTable(this, 'RefreshTokenTableConstruct', {
+    const refreshTokenTableConstruct = new StandardTable(this, 'RefreshTokenTable', {
       tableName: 'RefreshTokenTable',
       partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'tokenId', type: dynamodb.AttributeType.STRING },
@@ -71,7 +72,7 @@ export class StorageStack extends Stack {
     this.refreshTokenTable = refreshTokenTableConstruct.table;
 
     const userPermissionsTable = new dynamodb.Table(this, 'UserPermissionsTable', {
-      tableName: 'UserPermissions',
+      tableName: 'UserPermissionsTable',
       partitionKey: { name: 'granterUserId', type: dynamodb.AttributeType.STRING },
       // SK value will be 'permissionType#granteeUserId'
       sortKey: { name: 'granteePermissionTypeComposite', type: dynamodb.AttributeType.STRING },
@@ -91,14 +92,14 @@ export class StorageStack extends Stack {
 
     // Output the table names (optional but useful)
 
-    new CfnOutput(this, 'LearningEntryVersionsTableNameOutput', {
+    new CfnOutput(this, 'LearningEntriesTableNameOutput', {
       value: this.learningEntriesTable.tableName,
-      description: 'Name of the LearningEntryVersions DynamoDB table',
+      description: 'Name of the LearningEntriesTable DynamoDB table',
     });
 
     new CfnOutput(this, 'PrimmSubmissionsTableNameOutput', {
       value: this.primmSubmissionsTable.tableName,
-      description: 'Name of the PrimmSubmissions DynamoDB table',
+      description: 'Name of the PrimmSubmissionsTable DynamoDB table',
     });
   }
 }

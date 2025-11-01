@@ -16,18 +16,13 @@ export class FoundationalResourcesStack extends Stack {
   constructor(scope: Construct, id: string, props: FoundationalResourcesStackProps) {
     super(scope, id, props);
 
-    this.dockerRepository = new ecr.Repository(this, 'SampleAppDockerRepositoryConstruct', {
-      repositoryName: `sample_app_src_rep-${props.envProps.account}-${props.envProps.region}`,
-      removalPolicy: RemovalPolicy.RETAIN,
-      imageScanOnPush: true,
-      lifecycleRules: [
-        {
-          description: 'Keep only the last 2 images',
-          maxImageCount: 2,
-          tagStatus: ecr.TagStatus.ANY,
-        },
-      ],
-    });
+    // Reference the existing ECR repository created by the backend CI/CD pipeline
+    // Repository: 598791268315.dkr.ecr.us-west-1.amazonaws.com/thoughtful-coding/backend
+    this.dockerRepository = ecr.Repository.fromRepositoryName(
+      this,
+      'ThtflCodeAppDockerRepositoryConstruct',
+      'thoughtful-coding/backend'
+    );
 
     // Output the repository URI. This can be useful for CI/CD pipelines or for other stacks to reference.
     new CfnOutput(this, 'DockerRepositoryUriOutput', {

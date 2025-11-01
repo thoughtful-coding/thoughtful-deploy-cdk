@@ -18,29 +18,29 @@ if (!imageTag && process.env.CI) {
   );
 }
 
-const foundationalStack = new FoundationalResourcesStack(app, 'SampleFoundationalResourcesStack', {
+const foundationalStack = new FoundationalResourcesStack(app, 'ThtflCodeFoundationalResourcesStack', {
   envProps: envProps,
 });
 
-const storageStack = new StorageStack(app, 'SampleStorageStack', {
+const storageStack = new StorageStack(app, 'ThtflCodeStorageStack', {
   envProps: envProps,
 });
 
-const lambdaComputeStack = new ComputeStack(app, 'SampleLambdaComputeStack', {
+const lambdaComputeStack = new ComputeStack(app, 'ThtflCodeLambdaComputeStack', {
   envProps: envProps,
   dockerRepository: foundationalStack.dockerRepository,
   imageTag: imageTag || 'latest', // Ensure this fallback is acceptable or handle error
   userProgressTable: storageStack.userProgressTable,
   learningEntriesTable: storageStack.learningEntriesTable,
   primmSubmissionsTable: storageStack.primmSubmissionsTable,
-  throttlingStoreTable: storageStack.throttlingStoreTable,
+  throttleTable: storageStack.throttleTable,
   refreshTokenTable: storageStack.refreshTokenTable,
   userPermissionsTable: storageStack.userPermissionsTable,
   chatbotApiKeySecret: foundationalStack.chatbotApiKeySecret,
   jwtSecret: foundationalStack.jwtSecret,
 });
 
-const apiRoutesStack = new APIGatewayStack(app, 'SampleApiRoutesStack', {
+const apiRoutesStack = new APIGatewayStack(app, 'ThtflCodeApiRoutesStack', {
   userProgressLambda: lambdaComputeStack.userProgressLambda,
   learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
   primmFeedbackLambda: lambdaComputeStack.primmFeedbackLambda,
@@ -50,9 +50,14 @@ const apiRoutesStack = new APIGatewayStack(app, 'SampleApiRoutesStack', {
   env: { account: envProps.account, region: envProps.region },
 });
 
-const overviewStack = new OverviewStack(app, 'SampleOverviewStack', {
+const overviewStack = new OverviewStack(app, 'ThtflCodeOverviewStack', {
   authLambda: lambdaComputeStack.authLambda,
   authorizerLambda: lambdaComputeStack.authorizerLambda,
   learningEntriesLambda: lambdaComputeStack.learningEntriesLambda,
   primmFeedbackLambda: lambdaComputeStack.primmFeedbackLambda,
 });
+
+// Explicit stack dependencies to ensure correct deployment order
+// CDK doesn't automatically infer these when using IFunction interfaces
+apiRoutesStack.addDependency(lambdaComputeStack);
+overviewStack.addDependency(lambdaComputeStack);

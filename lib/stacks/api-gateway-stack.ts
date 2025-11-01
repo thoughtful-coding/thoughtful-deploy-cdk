@@ -21,9 +21,9 @@ export class APIGatewayStack extends Stack {
   constructor(scope: Construct, id: string, props: APIGatewayStackProps) {
     super(scope, id, props);
 
-    this.httpApi = new apigwv2.HttpApi(this, 'SampleAppHttpApi', {
-      apiName: 'SampleAppAPI',
-      description: 'HTTP API for the Sample Application',
+    this.httpApi = new apigwv2.HttpApi(this, 'ThtflCodeAppHttpApi', {
+      apiName: 'ThtflCodeAPI',
+      description: 'HTTP API for the ThtflCode Application',
       corsPreflight: {
         allowOrigins: ['https://eric-rizzi.github.io', 'http://localhost:5173'],
         allowMethods: [

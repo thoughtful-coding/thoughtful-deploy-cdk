@@ -14,7 +14,7 @@ export interface ComputeStackProps extends StackProps {
   readonly userProgressTable: dynamodb.ITable;
   readonly learningEntriesTable: dynamodb.ITable;
   readonly primmSubmissionsTable: dynamodb.ITable;
-  readonly throttlingStoreTable: dynamodb.ITable;
+  readonly throttleTable: dynamodb.ITable;
   readonly refreshTokenTable: dynamodb.ITable;
   readonly userPermissionsTable: dynamodb.ITable;
   readonly chatbotApiKeySecret: ManagedSecret;
@@ -54,7 +54,7 @@ export class ComputeStack extends Stack {
       cmd: ['thoughtful_backend.lambdas.learning_entries_lambda.learning_entries_lambda_handler'],
       environment: {
         CHATBOT_API_KEY_SECRET_ARN: props.chatbotApiKeySecret.secretArn,
-        THROTTLING_TABLE_NAME: props.throttlingStoreTable.tableName,
+        THROTTLE_TABLE_NAME: props.throttleTable.tableName,
         LEARNING_ENTRIES_TABLE_NAME: props.learningEntriesTable.tableName,
       },
     });
@@ -62,7 +62,7 @@ export class ComputeStack extends Stack {
     // Grant specific permissions
     props.learningEntriesTable.grantReadWriteData(this.learningEntriesLambda);
     props.chatbotApiKeySecret.grantRead(this.learningEntriesLambda);
-    props.throttlingStoreTable.grantReadWriteData(this.learningEntriesLambda);
+    props.throttleTable.grantReadWriteData(this.learningEntriesLambda);
 
     const primmFeedbackLambdaConstruct = new BasicDockerLambda(this, 'PRIMMFeedbackLambda', {
       functionNameSuffix: 'PRIMMFeedback',
@@ -72,14 +72,14 @@ export class ComputeStack extends Stack {
       cmd: ['thoughtful_backend.lambdas.primm_feedback_lambda.primm_feedback_lambda_handler'],
       environment: {
         CHATBOT_API_KEY_SECRET_ARN: props.chatbotApiKeySecret.secretArn,
-        THROTTLING_TABLE_NAME: props.throttlingStoreTable.tableName,
+        THROTTLE_TABLE_NAME: props.throttleTable.tableName,
         PRIMM_SUBMISSIONS_TABLE_NAME: props.primmSubmissionsTable.tableName,
       },
     });
     this.primmFeedbackLambda = primmFeedbackLambdaConstruct.function;
     // Grant specific permissions
     props.chatbotApiKeySecret.grantRead(this.primmFeedbackLambda);
-    props.throttlingStoreTable.grantReadWriteData(this.primmFeedbackLambda);
+    props.throttleTable.grantReadWriteData(this.primmFeedbackLambda);
     props.primmSubmissionsTable.grantWriteData(this.primmFeedbackLambda);
 
     const instructorPortalLambdaConstruct = new BasicDockerLambda(this, 'InstructorPortalLambda', {

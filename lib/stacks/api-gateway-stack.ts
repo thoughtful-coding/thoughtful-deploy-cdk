@@ -25,7 +25,7 @@ export class APIGatewayStack extends Stack {
       apiName: 'ThtflCodeAPI',
       description: 'HTTP API for the ThtflCode Application',
       corsPreflight: {
-        allowOrigins: ['https://eric-rizzi.github.io', 'http://localhost:5173'],
+        allowOrigins: ['https://eric-rizzi.github.io', 'http://localhost:5173', 'https://thoughtful-coding.github.io'],
         allowMethods: [
           apigwv2.CorsHttpMethod.GET,
           apigwv2.CorsHttpMethod.OPTIONS,

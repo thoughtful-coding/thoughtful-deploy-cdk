@@ -17,6 +17,7 @@ export interface ComputeStackProps extends StackProps {
   readonly throttleTable: dynamodb.ITable;
   readonly refreshTokenTable: dynamodb.ITable;
   readonly userPermissionsTable: dynamodb.ITable;
+  readonly firstSolutionsTable: dynamodb.ITable;
   readonly chatbotApiKeySecret: ManagedSecret;
   readonly jwtSecret: ManagedSecret;
 }
@@ -40,11 +41,13 @@ export class ComputeStack extends Stack {
       cmd: ['thoughtful_backend.lambdas.user_progress_lambda.user_progress_lambda_handler'],
       environment: {
         USER_PROGRESS_TABLE_NAME: props.userProgressTable.tableName,
+        FIRST_SOLUTIONS_TABLE_NAME: props.firstSolutionsTable.tableName,
       },
     });
     this.userProgressLambda = userProgressLambdaConstruct.function;
     // Grant specific permissions
     props.userProgressTable.grantReadWriteData(this.userProgressLambda);
+    props.firstSolutionsTable.grantReadWriteData(this.userProgressLambda);
 
     const learningEntriesLambdaConstruct = new BasicDockerLambda(this, 'LearningEntriesLambda', {
       functionNameSuffix: 'LearningEntries',
@@ -93,6 +96,7 @@ export class ComputeStack extends Stack {
         USER_PROGRESS_TABLE_NAME: props.userProgressTable.tableName,
         LEARNING_ENTRIES_TABLE_NAME: props.learningEntriesTable.tableName,
         PRIMM_SUBMISSIONS_TABLE_NAME: props.primmSubmissionsTable.tableName,
+        FIRST_SOLUTIONS_TABLE_NAME: props.firstSolutionsTable.tableName,
       },
     });
     this.instructorPortalLambda = instructorPortalLambdaConstruct.function;
@@ -101,6 +105,7 @@ export class ComputeStack extends Stack {
     props.userProgressTable.grantReadData(this.instructorPortalLambda);
     props.learningEntriesTable.grantReadWriteData(this.instructorPortalLambda);
     props.primmSubmissionsTable.grantReadWriteData(this.instructorPortalLambda);
+    props.firstSolutionsTable.grantReadData(this.instructorPortalLambda);
 
     const authLambdaConstruct = new BasicDockerLambda(this, 'AuthLambda', {
       functionNameSuffix: 'AuthHandler',

@@ -1,4 +1,4 @@
-import { RemovalPolicy, Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
+import { Stack, StackProps, CfnOutput } from 'aws-cdk-lib';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import { Construct } from 'constructs';
 import { ManagedSecret } from '../constructs/secret-manager';

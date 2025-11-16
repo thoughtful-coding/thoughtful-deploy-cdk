@@ -17,6 +17,7 @@ export class StorageStack extends Stack {
   public readonly throttleTable: dynamodb.ITable;
   public readonly refreshTokenTable: dynamodb.ITable;
   public readonly userPermissionsTable: dynamodb.ITable;
+  public readonly firstSolutionsTable: dynamodb.ITable;
 
   constructor(scope: Construct, id: string, props: StorageStackProps) {
     super(scope, id, props);
@@ -89,6 +90,14 @@ export class StorageStack extends Stack {
       projectionType: dynamodb.ProjectionType.ALL,
     });
     this.userPermissionsTable = userPermissionsTable;
+
+    const firstSolutionsTableConstruct = new StandardTable(this, 'FirstSolutionsTable', {
+      tableName: 'FirstSolutionsTable',
+      partitionKey: { name: 'sectionCompositeKey', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      removalPolicy: RemovalPolicy.RETAIN,
+    });
+    this.firstSolutionsTable = firstSolutionsTableConstruct.table;
 
     // Output the table names (optional but useful)
 

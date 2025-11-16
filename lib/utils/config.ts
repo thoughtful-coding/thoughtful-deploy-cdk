@@ -1,4 +1,3 @@
-
 // Define the interface for environment settings
 export interface EnvironmentProps {
     account: string;

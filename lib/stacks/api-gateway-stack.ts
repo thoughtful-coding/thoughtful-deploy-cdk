@@ -101,6 +101,14 @@ export class APIGatewayStack extends Stack {
       authorizer: customAuthorizer,
     });
 
+    new ApiRoute(this, 'InstructorStudentDetailedProgressRoute', {
+      httpApi: this.httpApi,
+      routePath: '/instructor/students/{studentId}/detailed-progress',
+      methods: [apigwv2.HttpMethod.GET],
+      handler: props.instructorPortalLambda,
+      authorizer: customAuthorizer,
+    });
+
     new ApiRoute(this, 'InstructorUnitProgressRoute', {
       httpApi: this.httpApi,
       routePath: '/instructor/units/{unitId}/class-progress',

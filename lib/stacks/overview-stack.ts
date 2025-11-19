@@ -89,6 +89,7 @@ export class OverviewStack extends Stack {
       createCustomMetricWidget('ChatBot Events (SUM)', 'ThoughtfulPython/ChatBot', [
         { name: 'ChatBotApiFailure', label: 'ChatBot API Failures', color: cw.Color.RED },
         { name: 'ThrottledRequest', label: 'Throttled Users', color: cw.Color.ORANGE },
+        { name: 'InputValidationFailed', label: 'Input Validation Failures', color: cw.Color.PURPLE },
       ]),
       new cw.GraphWidget({
         title: 'ChatBot Lambda Invocations (SUM)',

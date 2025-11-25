@@ -76,6 +76,13 @@ export class OverviewStack extends Stack {
       ])
     );
     dashboard.addWidgets(authRow);
+    const onboardingRow = new cw.Row(
+      createCustomMetricWidget('User Onboarding (SUM)', 'ThoughtfulPython/Authentication', [
+        { name: 'NewUserInitialized', label: 'New Users', color: cw.Color.GREEN },
+        { name: 'NewUserInitializationFailure', label: 'Initialization Failures', color: cw.Color.RED },
+      ])
+    );
+    dashboard.addWidgets(onboardingRow);
     dashboard.addWidgets(
       new cw.Row(
         createLambdaPerformanceWidget('Authorizer Lambda Performance', props.authorizerLambda),

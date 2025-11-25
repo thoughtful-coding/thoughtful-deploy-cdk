@@ -37,6 +37,7 @@ const lambdaComputeStack = new ComputeStack(app, 'ThtflCodeLambdaComputeStack', 
   refreshTokenTable: storageStack.refreshTokenTable,
   userPermissionsTable: storageStack.userPermissionsTable,
   firstSolutionsTable: storageStack.firstSolutionsTable,
+  userProfileTable: storageStack.userProfileTable,
   chatbotApiKeySecret: foundationalStack.chatbotApiKeySecret,
   jwtSecret: foundationalStack.jwtSecret,
 });

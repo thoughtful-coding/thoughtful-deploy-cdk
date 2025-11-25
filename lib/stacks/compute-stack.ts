@@ -18,6 +18,7 @@ export interface ComputeStackProps extends StackProps {
   readonly refreshTokenTable: dynamodb.ITable;
   readonly userPermissionsTable: dynamodb.ITable;
   readonly firstSolutionsTable: dynamodb.ITable;
+  readonly userProfileTable: dynamodb.ITable;
   readonly chatbotApiKeySecret: ManagedSecret;
   readonly jwtSecret: ManagedSecret;
 }
@@ -117,11 +118,16 @@ export class ComputeStack extends Stack {
         REFRESH_TOKEN_TABLE_NAME: props.refreshTokenTable.tableName,
         JWT_SECRET_ARN: props.jwtSecret.secretArn,
         GOOGLE_CLIENT_ID: GOOGLE_CLIENT_ID,
+        USER_PROFILE_TABLE_NAME: props.userProfileTable.tableName,
+        USER_PERMISSIONS_TABLE_NAME: props.userPermissionsTable.tableName,
+        ENABLE_DEMO_PERMISSIONS: 'true', // Enable demo permissions for new users
       },
     });
     this.authLambda = authLambdaConstruct.function;
     props.jwtSecret.grantRead(this.authLambda);
     props.refreshTokenTable.grantReadWriteData(this.authLambda);
+    props.userProfileTable.grantReadWriteData(this.authLambda);
+    props.userPermissionsTable.grantWriteData(this.authLambda);
 
     const authorizerLambdaConstruct = new BasicDockerLambda(this, 'AuthorizerLambda', {
       functionNameSuffix: 'TokenAuthorizer',

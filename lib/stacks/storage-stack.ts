@@ -19,6 +19,7 @@ export class StorageStack extends Stack {
   public readonly userPermissionsTable: dynamodb.ITable;
   public readonly firstSolutionsTable: dynamodb.ITable;
   public readonly userProfileTable: dynamodb.ITable;
+  public readonly secretsTable: dynamodb.ITable;
 
   constructor(scope: Construct, id: string, props: StorageStackProps) {
     super(scope, id, props);
@@ -106,6 +107,13 @@ export class StorageStack extends Stack {
       removalPolicy: RemovalPolicy.RETAIN,
     });
     this.userProfileTable = userProfileTableConstruct.table;
+
+    const secretsTableConstruct = new StandardTable(this, 'SecretsTable', {
+      tableName: 'SecretsTable',
+      partitionKey: { name: 'secretKey', type: dynamodb.AttributeType.STRING },
+      removalPolicy: RemovalPolicy.RETAIN,
+    });
+    this.secretsTable = secretsTableConstruct.table;
 
     // Output the table names (optional but useful)
 

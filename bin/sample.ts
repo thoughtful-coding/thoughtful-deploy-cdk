@@ -38,8 +38,7 @@ const lambdaComputeStack = new ComputeStack(app, 'ThtflCodeLambdaComputeStack', 
   userPermissionsTable: storageStack.userPermissionsTable,
   firstSolutionsTable: storageStack.firstSolutionsTable,
   userProfileTable: storageStack.userProfileTable,
-  chatbotApiKeySecret: foundationalStack.chatbotApiKeySecret,
-  jwtSecret: foundationalStack.jwtSecret,
+  secretsTable: storageStack.secretsTable,
 });
 
 const apiRoutesStack = new APIGatewayStack(app, 'ThtflCodeApiRoutesStack', {

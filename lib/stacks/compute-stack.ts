@@ -5,7 +5,6 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
 import { EnvironmentProps, GOOGLE_CLIENT_ID } from '../utils/config';
 import { BasicDockerLambda } from '../constructs/lambda';
-import { ManagedSecret } from '../constructs/secret-manager';
 
 export interface ComputeStackProps extends StackProps {
   readonly envProps: EnvironmentProps;
@@ -19,8 +18,7 @@ export interface ComputeStackProps extends StackProps {
   readonly userPermissionsTable: dynamodb.ITable;
   readonly firstSolutionsTable: dynamodb.ITable;
   readonly userProfileTable: dynamodb.ITable;
-  readonly chatbotApiKeySecret: ManagedSecret;
-  readonly jwtSecret: ManagedSecret;
+  readonly secretsTable: dynamodb.ITable;
 }
 
 export class ComputeStack extends Stack {
@@ -57,7 +55,7 @@ export class ComputeStack extends Stack {
       imageTag: props.imageTag,
       cmd: ['thoughtful_backend.lambdas.learning_entries_lambda.learning_entries_lambda_handler'],
       environment: {
-        CHATBOT_API_KEY_SECRET_ARN: props.chatbotApiKeySecret.secretArn,
+        SECRETS_TABLE_NAME: props.secretsTable.tableName,
         THROTTLE_TABLE_NAME: props.throttleTable.tableName,
         LEARNING_ENTRIES_TABLE_NAME: props.learningEntriesTable.tableName,
       },
@@ -65,7 +63,7 @@ export class ComputeStack extends Stack {
     this.learningEntriesLambda = learningEntriesLambdaConstruct.function;
     // Grant specific permissions
     props.learningEntriesTable.grantReadWriteData(this.learningEntriesLambda);
-    props.chatbotApiKeySecret.grantRead(this.learningEntriesLambda);
+    props.secretsTable.grantReadData(this.learningEntriesLambda);
     props.throttleTable.grantReadWriteData(this.learningEntriesLambda);
 
     const primmFeedbackLambdaConstruct = new BasicDockerLambda(this, 'PRIMMFeedbackLambda', {
@@ -75,14 +73,14 @@ export class ComputeStack extends Stack {
       imageTag: props.imageTag,
       cmd: ['thoughtful_backend.lambdas.primm_feedback_lambda.primm_feedback_lambda_handler'],
       environment: {
-        CHATBOT_API_KEY_SECRET_ARN: props.chatbotApiKeySecret.secretArn,
+        SECRETS_TABLE_NAME: props.secretsTable.tableName,
         THROTTLE_TABLE_NAME: props.throttleTable.tableName,
         PRIMM_SUBMISSIONS_TABLE_NAME: props.primmSubmissionsTable.tableName,
       },
     });
     this.primmFeedbackLambda = primmFeedbackLambdaConstruct.function;
     // Grant specific permissions
-    props.chatbotApiKeySecret.grantRead(this.primmFeedbackLambda);
+    props.secretsTable.grantReadData(this.primmFeedbackLambda);
     props.throttleTable.grantReadWriteData(this.primmFeedbackLambda);
     props.primmSubmissionsTable.grantWriteData(this.primmFeedbackLambda);
 
@@ -116,7 +114,7 @@ export class ComputeStack extends Stack {
       cmd: ['thoughtful_backend.lambdas.auth_lambda.auth_lambda_handler'],
       environment: {
         REFRESH_TOKEN_TABLE_NAME: props.refreshTokenTable.tableName,
-        JWT_SECRET_ARN: props.jwtSecret.secretArn,
+        SECRETS_TABLE_NAME: props.secretsTable.tableName,
         GOOGLE_CLIENT_ID: GOOGLE_CLIENT_ID,
         USER_PROFILE_TABLE_NAME: props.userProfileTable.tableName,
         USER_PERMISSIONS_TABLE_NAME: props.userPermissionsTable.tableName,
@@ -124,7 +122,7 @@ export class ComputeStack extends Stack {
       },
     });
     this.authLambda = authLambdaConstruct.function;
-    props.jwtSecret.grantRead(this.authLambda);
+    props.secretsTable.grantReadData(this.authLambda);
     props.refreshTokenTable.grantReadWriteData(this.authLambda);
     props.userProfileTable.grantReadWriteData(this.authLambda);
     props.userPermissionsTable.grantWriteData(this.authLambda);
@@ -136,12 +134,12 @@ export class ComputeStack extends Stack {
       imageTag: props.imageTag,
       cmd: ['thoughtful_backend.lambdas.authorizer_lambda.authorizer_lambda_handler'],
       environment: {
-        JWT_SECRET_ARN: props.jwtSecret.secretArn,
+        SECRETS_TABLE_NAME: props.secretsTable.tableName,
       },
       timeout: Duration.seconds(10), // Authorizers should be fast
     });
     this.authorizerLambda = authorizerLambdaConstruct.function;
     // Grant specific permissions
-    props.jwtSecret.grantRead(this.authorizerLambda);
+    props.secretsTable.grantReadData(this.authorizerLambda);
   }
 }

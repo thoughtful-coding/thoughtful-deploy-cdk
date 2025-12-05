@@ -5,7 +5,6 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
 import { EnvironmentProps, GOOGLE_CLIENT_ID } from '../utils/config';
 import { BasicDockerLambda } from '../constructs/lambda';
-import { ManagedSecret } from '../constructs/secret-manager';
 
 export interface ComputeStackProps extends StackProps {
   readonly envProps: EnvironmentProps;
@@ -19,8 +18,6 @@ export interface ComputeStackProps extends StackProps {
   readonly userPermissionsTable: dynamodb.ITable;
   readonly firstSolutionsTable: dynamodb.ITable;
   readonly userProfileTable: dynamodb.ITable;
-  readonly chatbotApiKeySecret: ManagedSecret;
-  readonly jwtSecret: ManagedSecret;
   readonly secretsTable: dynamodb.ITable;
 }
 

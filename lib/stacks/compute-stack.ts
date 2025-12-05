@@ -67,7 +67,6 @@ export class ComputeStack extends Stack {
     this.learningEntriesLambda = learningEntriesLambdaConstruct.function;
     // Grant specific permissions
     props.learningEntriesTable.grantReadWriteData(this.learningEntriesLambda);
-    props.chatbotApiKeySecret.grantRead(this.learningEntriesLambda);
     props.secretsTable.grantReadData(this.learningEntriesLambda);
     props.throttleTable.grantReadWriteData(this.learningEntriesLambda);
 
@@ -86,7 +85,6 @@ export class ComputeStack extends Stack {
     });
     this.primmFeedbackLambda = primmFeedbackLambdaConstruct.function;
     // Grant specific permissions
-    props.chatbotApiKeySecret.grantRead(this.primmFeedbackLambda);
     props.secretsTable.grantReadData(this.primmFeedbackLambda);
     props.throttleTable.grantReadWriteData(this.primmFeedbackLambda);
     props.primmSubmissionsTable.grantWriteData(this.primmFeedbackLambda);
@@ -130,7 +128,6 @@ export class ComputeStack extends Stack {
       },
     });
     this.authLambda = authLambdaConstruct.function;
-    props.jwtSecret.grantRead(this.authLambda);
     props.secretsTable.grantReadData(this.authLambda);
     props.refreshTokenTable.grantReadWriteData(this.authLambda);
     props.userProfileTable.grantReadWriteData(this.authLambda);
@@ -150,7 +147,6 @@ export class ComputeStack extends Stack {
     });
     this.authorizerLambda = authorizerLambdaConstruct.function;
     // Grant specific permissions
-    props.jwtSecret.grantRead(this.authorizerLambda);
     props.secretsTable.grantReadData(this.authorizerLambda);
   }
 }

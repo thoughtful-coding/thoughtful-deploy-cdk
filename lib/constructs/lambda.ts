@@ -35,7 +35,7 @@ export class BasicDockerLambda extends Construct {
         REGION: region,
         ...props.environment,
       },
-      timeout: props.timeout ?? Duration.seconds(40),
+      timeout: props.timeout ?? Duration.seconds(60),
       memorySize: props.memorySize ?? 256,
     });
   }

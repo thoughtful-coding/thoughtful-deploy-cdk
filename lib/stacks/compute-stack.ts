@@ -58,7 +58,6 @@ export class ComputeStack extends Stack {
       imageTag: props.imageTag,
       cmd: ['thoughtful_backend.lambdas.learning_entries_lambda.learning_entries_lambda_handler'],
       environment: {
-        CHATBOT_API_KEY_SECRET_ARN: props.chatbotApiKeySecret.secretArn,
         SECRETS_TABLE_NAME: props.secretsTable.tableName,
         THROTTLE_TABLE_NAME: props.throttleTable.tableName,
         LEARNING_ENTRIES_TABLE_NAME: props.learningEntriesTable.tableName,
@@ -77,7 +76,6 @@ export class ComputeStack extends Stack {
       imageTag: props.imageTag,
       cmd: ['thoughtful_backend.lambdas.primm_feedback_lambda.primm_feedback_lambda_handler'],
       environment: {
-        CHATBOT_API_KEY_SECRET_ARN: props.chatbotApiKeySecret.secretArn,
         SECRETS_TABLE_NAME: props.secretsTable.tableName,
         THROTTLE_TABLE_NAME: props.throttleTable.tableName,
         PRIMM_SUBMISSIONS_TABLE_NAME: props.primmSubmissionsTable.tableName,
@@ -119,7 +117,6 @@ export class ComputeStack extends Stack {
       cmd: ['thoughtful_backend.lambdas.auth_lambda.auth_lambda_handler'],
       environment: {
         REFRESH_TOKEN_TABLE_NAME: props.refreshTokenTable.tableName,
-        JWT_SECRET_ARN: props.jwtSecret.secretArn,
         SECRETS_TABLE_NAME: props.secretsTable.tableName,
         GOOGLE_CLIENT_ID: GOOGLE_CLIENT_ID,
         USER_PROFILE_TABLE_NAME: props.userProfileTable.tableName,
@@ -140,7 +137,6 @@ export class ComputeStack extends Stack {
       imageTag: props.imageTag,
       cmd: ['thoughtful_backend.lambdas.authorizer_lambda.authorizer_lambda_handler'],
       environment: {
-        JWT_SECRET_ARN: props.jwtSecret.secretArn,
         SECRETS_TABLE_NAME: props.secretsTable.tableName,
       },
       timeout: Duration.seconds(10), // Authorizers should be fast

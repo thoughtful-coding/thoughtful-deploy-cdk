@@ -14,7 +14,7 @@ export class FoundationalResourcesStack extends Stack {
     super(scope, id, props);
 
     // Reference the existing ECR repository created by the backend CI/CD pipeline
-    // Repository: 598791268315.dkr.ecr.us-west-1.amazonaws.com/thoughtful-coding/backend
+    // The repository must exist in the target region (created manually or via backend CI/CD)
     this.dockerRepository = ecr.Repository.fromRepositoryName(
       this,
       'ThtflCodeAppDockerRepositoryConstruct',

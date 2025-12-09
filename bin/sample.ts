@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import { CdkConfig } from '../lib/utils/config';
+import { CdkConfig, Stage, getStageConfig } from '../lib/utils/config';
 import { FoundationalResourcesStack } from '../lib/stacks/foundational-resources-stack';
 import { StorageStack } from '../lib/stacks/storage-stack';
 import { ComputeStack } from '../lib/stacks/compute-stack';
@@ -7,7 +7,15 @@ import { OverviewStack } from '../lib/stacks/overview-stack';
 import { APIGatewayStack } from '../lib/stacks/api-gateway-stack';
 
 const app = new cdk.App();
-const envProps = CdkConfig.getEnvironment();
+
+// Get stage from context (default: 'prod')
+const stage = (app.node.tryGetContext('stage') as Stage) || 'prod';
+const stageConfig = getStageConfig(stage);
+const envProps = CdkConfig.getEnvironment(stage);
+
+console.log(`Deploying stage: ${stage} to region: ${envProps.region}`);
+console.log(`  - enableTestAuth: ${stageConfig.enableTestAuth}`);
+console.log(`  - enableDemoPermissions: ${stageConfig.enableDemoPermissions}`);
 
 const imageTag = app.node.tryGetContext('imageTag') as string | undefined;
 if (!imageTag && process.env.CI) {
@@ -28,6 +36,7 @@ const storageStack = new StorageStack(app, 'ThtflCodeStorageStack', {
 
 const lambdaComputeStack = new ComputeStack(app, 'ThtflCodeLambdaComputeStack', {
   envProps: envProps,
+  stageConfig: stageConfig,
   dockerRepository: foundationalStack.dockerRepository,
   imageTag: imageTag || 'latest', // Ensure this fallback is acceptable or handle error
   userProgressTable: storageStack.userProgressTable,
@@ -48,6 +57,7 @@ const apiRoutesStack = new APIGatewayStack(app, 'ThtflCodeApiRoutesStack', {
   instructorPortalLambda: lambdaComputeStack.instructorPortalLambda,
   authLambda: lambdaComputeStack.authLambda,
   authorizerLambda: lambdaComputeStack.authorizerLambda,
+  stageConfig: stageConfig,
   env: { account: envProps.account, region: envProps.region },
 });
 

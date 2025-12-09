@@ -4,6 +4,7 @@ import * as apigwv2 from 'aws-cdk-lib/aws-apigatewayv2';
 import { Construct } from 'constructs';
 import { HttpLambdaAuthorizer, HttpLambdaResponseType } from 'aws-cdk-lib/aws-apigatewayv2-authorizers';
 import { ApiRoute } from '../constructs/api-route';
+import { StageConfig } from '../utils/config';
 
 export interface APIGatewayStackProps extends StackProps {
   readonly userProgressLambda: lambda.IFunction;
@@ -12,6 +13,7 @@ export interface APIGatewayStackProps extends StackProps {
   readonly instructorPortalLambda: lambda.IFunction;
   readonly authLambda: lambda.IFunction;
   readonly authorizerLambda: lambda.IFunction;
+  readonly stageConfig: StageConfig;
 }
 
 export class APIGatewayStack extends Stack {
@@ -148,5 +150,17 @@ export class APIGatewayStack extends Stack {
       handler: props.authLambda,
       // No 'authorizer' property, making this route public
     });
+
+    // Only add the test-login route in beta environment
+    if (props.stageConfig.enableTestAuth) {
+      new ApiRoute(this, 'AuthTestLoginRoute', {
+        httpApi: this.httpApi,
+        routePath: '/auth/test-login',
+        methods: [apigwv2.HttpMethod.POST],
+        handler: props.authLambda,
+        // No 'authorizer' property, making this route public
+        // Requires BETA_AUTH_SECRET in request body for authentication
+      });
+    }
   }
 }

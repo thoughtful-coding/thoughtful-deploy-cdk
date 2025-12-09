@@ -3,11 +3,12 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import { Construct } from 'constructs';
-import { EnvironmentProps, GOOGLE_CLIENT_ID } from '../utils/config';
+import { EnvironmentProps, GOOGLE_CLIENT_ID, StageConfig } from '../utils/config';
 import { BasicDockerLambda } from '../constructs/lambda';
 
 export interface ComputeStackProps extends StackProps {
   readonly envProps: EnvironmentProps;
+  readonly stageConfig: StageConfig;
   readonly dockerRepository: ecr.IRepository;
   readonly imageTag: string;
   readonly userProgressTable: dynamodb.ITable;
@@ -118,7 +119,8 @@ export class ComputeStack extends Stack {
         GOOGLE_CLIENT_ID: GOOGLE_CLIENT_ID,
         USER_PROFILE_TABLE_NAME: props.userProfileTable.tableName,
         USER_PERMISSIONS_TABLE_NAME: props.userPermissionsTable.tableName,
-        ENABLE_DEMO_PERMISSIONS: 'true', // Enable demo permissions for new users
+        ENABLE_DEMO_PERMISSIONS: props.stageConfig.enableDemoPermissions ? 'true' : 'false',
+        ENABLE_TEST_AUTH: props.stageConfig.enableTestAuth ? 'true' : 'false',
       },
     });
     this.authLambda = authLambdaConstruct.function;

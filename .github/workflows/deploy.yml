@@ -10,8 +10,16 @@ on:
         description: 'Docker image tag to deploy (leave empty for "prod")'
         required: false
         type: string
+      stage:
+        description: 'Deployment stage (prod or beta)'
+        required: false
+        type: choice
+        options:
+          - prod
+          - beta
+        default: prod
   repository_dispatch:
-    types: [backend-deployed]
+    types: [backend-deployed, beta-deployed]
 
 jobs:
   lint:
@@ -76,35 +84,58 @@ jobs:
       - name: Install AWS CDK
         run: npm install -g aws-cdk
 
+      - name: Determine stage and image tag
+        id: config
+        run: |
+          # Determine stage from various sources
+          if [ "${{ github.event.action }}" == "beta-deployed" ]; then
+            STAGE="beta"
+          elif [ -n "${{ github.event.client_payload.stage }}" ]; then
+            STAGE="${{ github.event.client_payload.stage }}"
+          elif [ -n "${{ inputs.stage }}" ]; then
+            STAGE="${{ inputs.stage }}"
+          else
+            STAGE="prod"
+          fi
+
+          # Set AWS region based on stage
+          if [ "$STAGE" == "beta" ]; then
+            AWS_REGION="us-east-1"
+          else
+            AWS_REGION="us-west-1"
+          fi
+
+          echo "STAGE=${STAGE}" >> $GITHUB_ENV
+          echo "AWS_REGION=${AWS_REGION}" >> $GITHUB_ENV
+          echo "Deployment stage: ${STAGE}, AWS region: ${AWS_REGION}"
+
+          # Determine image tag
+          if [ -n "${{ github.event.client_payload.imageTag }}" ]; then
+            echo "IMAGE_TAG=${{ github.event.client_payload.imageTag }}" >> $GITHUB_ENV
+            echo "Using image tag from repository dispatch: ${{ github.event.client_payload.imageTag }}"
+          elif [ -n "${{ inputs.imageTag }}" ]; then
+            echo "IMAGE_TAG=${{ inputs.imageTag }}" >> $GITHUB_ENV
+            echo "Using image tag from manual input: ${{ inputs.imageTag }}"
+          elif [ "$STAGE" == "beta" ]; then
+            echo "IMAGE_TAG=beta" >> $GITHUB_ENV
+            echo "Using default beta image tag: beta"
+          else
+            echo "IMAGE_TAG=prod" >> $GITHUB_ENV
+            echo "Using default prod image tag: prod"
+          fi
+
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::598791268315:role/GitHubActionsCDKRole
-          aws-region: us-west-1
-
-      - name: Determine image tag
-        id: image-tag
-        run: |
-          if [ -n "${{ github.event.client_payload.imageTag }}" ]; then
-            # Triggered by backend repository dispatch
-            echo "IMAGE_TAG=${{ github.event.client_payload.imageTag }}" >> $GITHUB_ENV
-            echo "Using image tag from repository dispatch: ${{ github.event.client_payload.imageTag }}"
-          elif [ -n "${{ inputs.imageTag }}" ]; then
-            # Manual workflow dispatch with image tag
-            echo "IMAGE_TAG=${{ inputs.imageTag }}" >> $GITHUB_ENV
-            echo "Using image tag from manual input: ${{ inputs.imageTag }}"
-          else
-            # Default to 'prod' tag
-            echo "IMAGE_TAG=prod" >> $GITHUB_ENV
-            echo "Using default image tag: prod"
-          fi
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: CDK diff
         run: |
-          echo "Running CDK diff with image tag: $IMAGE_TAG"
-          cdk diff --all --context imageTag="${IMAGE_TAG}" || echo "No changes detected by cdk diff or diff command failed."
+          echo "Running CDK diff for stage: $STAGE with image tag: $IMAGE_TAG in region: $AWS_REGION"
+          cdk diff --all --context imageTag="${IMAGE_TAG}" --context stage="${STAGE}" || echo "No changes detected by cdk diff or diff command failed."
 
       - name: CDK deploy
         run: |
-          echo "Deploying CDK with image tag: $IMAGE_TAG"
-          cdk deploy --all --require-approval never --context imageTag="${IMAGE_TAG}"
+          echo "Deploying CDK for stage: $STAGE with image tag: $IMAGE_TAG in region: $AWS_REGION"
+          cdk deploy --all --require-approval never --context imageTag="${IMAGE_TAG}" --context stage="${STAGE}"

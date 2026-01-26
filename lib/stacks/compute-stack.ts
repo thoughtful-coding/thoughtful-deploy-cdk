@@ -139,6 +139,7 @@ export class ComputeStack extends Stack {
         SECRETS_TABLE_NAME: props.secretsTable.tableName,
       },
       timeout: Duration.seconds(10), // Authorizers should be fast
+      memorySize: 512, // Higher memory = faster cold starts
     });
     this.authorizerLambda = authorizerLambdaConstruct.function;
     // Grant specific permissions

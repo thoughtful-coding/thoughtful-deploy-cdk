@@ -45,6 +45,7 @@ export class APIGatewayStack extends Stack {
     const customAuthorizer = new HttpLambdaAuthorizer('CustomLambdaAuthorizer', props.authorizerLambda, {
       responseTypes: [HttpLambdaResponseType.IAM], // Required for this policy format
       identitySource: ['$request.header.Authorization'],
+      resultsCacheTtl: Duration.hours(1), // Cache auth results to reduce cold starts
     });
 
     new ApiRoute(this, 'UserProgressRoute', {

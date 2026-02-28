@@ -58,42 +58,120 @@ cdk deploy --all --context imageTag=abc  # Deploy with specific Docker image
 | **APIGatewayStack** | HTTP routing | HTTP API, Lambda authorizer, routes |
 | **OverviewStack** | Monitoring | CloudWatch dashboard |
 
-## Deployment
+## Deployment Pipeline
+
+### Overview
+
+Backend deployment follows a **beta-first** strategy: every change goes to beta automatically, and production requires manual approval.
+
+```
+Backend repo                          CDK repo (this repo)
+────────────                          ────────────────────
+
+push to main
+    │
+    ├─ lint + test
+    │
+    ▼
+build Docker image
+    │
+    ├─ push to ECR (us-east-1, tag: beta + sha)
+    ├─ push to ECR (us-west-1, tag: prod + sha)
+    │
+    ▼
+trigger CDK repo ──────────────────►  deploy to BETA (us-east-1)
+  (repository_dispatch:                   │
+   beta-deployed)                         ▼
+                                      E2E tests run against beta
+                                          │
+                                          ▼
+                                      ┌─────────────────────┐
+                                      │  Manual approval     │
+                                      │  (GitHub Environment │
+                                      │   protection rule)   │
+                                      └─────────────────────┘
+                                          │
+                                          ▼
+                                      deploy to PROD (us-west-1)
+```
+
+The frontend deploys independently — push to main on `thoughtful-coding.github.io` builds, runs E2E tests, and deploys to GitHub Pages. No beta/prod split since it can be fully tested locally.
+
+### Environments
+
+| | Beta | Production |
+|---|---|---|
+| **Region** | us-east-1 | us-west-1 |
+| **Test auth** | Enabled (for Playwright E2E) | Disabled |
+| **Deploys** | Automatically on push to main | After manual approval |
+| **Image tag** | `beta` + commit SHA | `prod` + commit SHA |
+
+### What Happens on Push to Main (Backend Repo)
+
+1. **Backend CI** (`thoughtful-backend/.github/workflows/deploy.yml`):
+   - Runs lint (Black) and tests (pytest) in parallel
+   - Builds Docker image
+   - Pushes to ECR in **both** regions (tagged with commit SHA + `beta`/`prod`)
+   - Sends `repository_dispatch` event to this CDK repo
+
+2. **CDK deploys beta** (`thoughtful-deploy-cdk/.github/workflows/deploy.yml`):
+   - Receives `beta-deployed` event with `imageTag`
+   - Runs CDK lint + test
+   - Runs `cdk deploy --all --context stage=beta --context imageTag={sha}`
+   - Lambda functions in us-east-1 update to the new image
+
+3. **E2E tests** (optional gate):
+   - Frontend Playwright tests run against the beta API
+   - Beta has test auth enabled, so tests can authenticate without Google OAuth
+
+4. **Manual approval**:
+   - Pipeline pauses at the `production` GitHub Environment
+   - You review and click "Approve" in the GitHub Actions UI
+
+5. **CDK deploys prod**:
+   - Runs `cdk deploy --all --context stage=prod --context imageTag={sha}`
+   - Lambda functions in us-west-1 update to the same image that was validated in beta
+
+### Manual Deployment
+
+Both stages can be deployed manually via the GitHub Actions UI: **Actions → Deploy CDK Infrastructure → Run workflow**, then select stage (beta/prod) and optionally provide an image tag.
+
+### Local Deployment
+
+```bash
+# Deploy to beta
+cdk deploy --all --context stage=beta --context imageTag=abc123
+
+# Deploy to prod
+cdk deploy --all --context stage=prod --context imageTag=abc123
+
+# Deploy with default tags (uses 'prod' or 'beta' tag from ECR)
+cdk deploy --all --context stage=beta
+```
 
 ### Prerequisites
 
 1. AWS CLI configured with appropriate credentials
 2. Node.js 18+
-3. CDK bootstrapped: `cdk bootstrap aws://{account}/{region}`
+3. CDK bootstrapped in both regions:
+   - `cdk bootstrap aws://598791268315/us-west-1` (prod)
+   - `cdk bootstrap aws://598791268315/us-east-1` (beta)
 4. Docker image in ECR (built by backend repo CI/CD)
-
-### Deploy
-
-```bash
-# Full deployment with specific image tag (CI/CD)
-cdk deploy --all --context imageTag=abc123def
-
-# Deploy with 'latest' tag (local development)
-cdk deploy --all
-```
+5. GitHub Environment `production` configured with required reviewers (for approval gate)
 
 ### Post-Deployment Setup
 
-Set the chatbot API key manually (not auto-generated):
+Set the chatbot API key in the SecretsTable (must be done per environment):
 
 ```bash
-aws secretsmanager put-secret-value \
-  --secret-id /thoughtful-python/chatbot-api-key \
-  --secret-string "YOUR_GEMINI_API_KEY"
+# Beta (us-east-1)
+aws dynamodb put-item --region us-east-1 --table-name SecretsTable \
+  --item '{"secretKey": {"S": "CHATBOT_API_KEY"}, "secretValue": {"S": "your-api-key"}}'
+
+# Prod (us-west-1)
+aws dynamodb put-item --region us-west-1 --table-name SecretsTable \
+  --item '{"secretKey": {"S": "CHATBOT_API_KEY"}, "secretValue": {"S": "your-api-key"}}'
 ```
-
-## CI/CD
-
-The GitHub Actions workflow triggers automatically when:
-- **Backend repo pushes** to main → Triggers this repo with `IMAGE_TAG`
-- **Direct pushes** to this repo's main → Uses `prod` tag
-
-Pipeline stages: lint → test → deploy
 
 ## API Routes
 

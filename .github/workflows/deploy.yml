@@ -188,6 +188,8 @@ jobs:
           VITE_TEST_AUTH_SECRET: ${{ secrets.TEST_AUTH_SECRET }}
           VITE_TEST_USER_ID: instructor-test@thoughtful.local
           HOME: /root
+          TZ: America/New_York
+          LANG: en_US.UTF-8
 
       - name: Upload test results
         if: always()
